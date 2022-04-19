@@ -1,0 +1,287 @@
+# POST http://localhost:5000/user/register
+# Content-Type: application/json
+
+# {
+#     "email":"0@gmail.",
+#     "username": "tecst1",
+#     "password": "123456",
+#     "gender":"male",
+#     "phone": "0123456",
+#     "fullname": "huy1tran"
+# }
+
+# POST http://localhost:5000/user/reset_password
+# Content-Type: application/json
+# Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNDU3M2VkN2JjZTU2ZDY5YjIwZTU1OCIsImlhdCI6MTY0ODc0MjQwNywiZXhwIjoxNjQ4NzQzMzA3fQ.6p4F-if_-EN_SAW-zEufd1nGjcfrQdrI9Yl0ehXsL5Y
+
+# {
+#     "password":"456789"
+# }
+###
+#PATCH là một cập nhập một phần
+# #PUT là cập nhập tât cả
+
+# POST http://localhost:5000/user/login
+# Content-Type: application/json
+
+# {
+#     "email": "quanghuytran02072000@gmail.com",
+#     "password": "456789"
+# }
+
+
+
+# PATCH  http://localhost:5000/user/change_avatar
+# Content-Type: application/json
+# Authorization: Bearer 
+
+# {
+#     "avatar": "newAvatar1"
+# }
+
+# PATCH http://localhost:5000/user/change_profile
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# {
+#     "fullname": "huythuhai",
+#     "gender":"male",
+#     "phone": "0123456",
+#     "address":"hi",
+#     "birthday": "2014-02-10",
+#     "hobbies": ["a","b"]
+# }
+
+
+
+# PUT http://localhost:5000/user/6194c34c3548f2730fc6b8c5/unfollow
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+
+########################################   POST  #####################
+# POST http://localhost:5000/post/create_post
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# {
+#     "content":"second post",
+#     "images": ["url1","url2"],
+#     "isPostReview":false,
+#     "start": null,
+#     "cost": null,
+#     "isPublic": true,
+#     "locationId":null
+# }
+
+# PATCH http://localhost:5000/post/6194d11d9c8cddd869acf1c9
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# {
+#     "content":"firt update post",
+#     "images": ["url1","url2"],
+#     "start": null,
+#     "cost": null,
+#     "isPublic": true,
+#     "locationId":null
+# }
+
+# DELETE http://localhost:5000/post/6194d260e28395e6ba3e74b7
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+
+# PATCH  http://localhost:5000/post/6194d8592e798a328d1832ea/unlike
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+
+
+#######################  COMMENT #########################
+
+# POST http://localhost:5000/comment/create_comment
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# {
+#     "commentType":"post",
+#     "content":"testComment",
+#     "postId": "6194d8592e798a328d1832ea",
+#     "tourId": null,
+#     "activityId":null
+# }
+
+# DELETE  http://localhost:5000/comment/619536fbb187bf4615519c36
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# POST http://localhost:5000/tour/create_tour
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+
+# {
+#     "content": "content first tour",
+#     "tourName": "first tour",
+#     "isPublic": true,
+#     "taggedIds": null,
+#     "hashtag": null,
+#     "image": "url1",
+#     "tourDate": [{
+#         "date": "2020-10-10",
+#         "locations": [
+#             {
+#                 "locationId": null,
+#                 "cost": 123,
+#                 "postId": null 
+#             },
+#             {
+#                  "locationId": null,
+#                 "cost": 456,
+#                 "postId": null 
+#             }
+
+#         ]
+#     }]
+# }
+
+
+# POST http://localhost:5000/province/create_province
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxOTRiNmViMTQxNDk5YzUyZmJiMzg1NCIsImlhdCI6MTYzNzEzODc5NH0.jape8JJwSftn6hdlwHDNyVIymh5NXTcuRTRpF8bZjpg
+ 
+# {
+#     "name": "QN",
+#     "information":"tesst province",
+#     "image": "url"
+# }
+
+
+
+# POST http://localhost:5000/volunteer/create_volunteer
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxY2U3NzM0YmI5ZmIxNTIwZjQxNTcyYyIsImlhdCI6MTY0NDgyNDQxMX0.mPDebvCIN2r5jw2Lzpb1gbq_mXTL2hsdSJC7afDRS10
+
+# {
+#     "name": "Du lịch tình nguyện C",
+#     "image": "https://res.cloudinary.com/huunguyencs/image/upload/v1644574760/d8qc2m8gqkpcoaggthzx.jpg",
+#     "cost": "2000000",
+#     "descriptions": ["good","good1","good2"],
+#     "date": [{
+#         "activities": [{
+#             "time": "9h-10h",
+#             "activity": "an"
+#         },{
+#             "time": "11h-12h",
+#             "activity": "an"
+#         }],
+#         "accommodation": "hotel1",
+#         "date": "2020-11-25"
+#     },
+#     {
+#         "activities": [{
+#             "time": "9h-10h",
+#             "activity": "an"
+#         },{
+#             "time": "11h-12h",
+#             "activity": "an"
+#         }],
+#         "accommodation": "hotel1",
+#         "date": "2020-11-26"
+#     }],
+#     "location": [{
+#         "users": [],
+#         "timeStart": "2020-11-25",
+#         "maxUsers": 10,
+#         "description": ["abc","DEF"],
+#         "activities": ["day", "an"],
+#         "accommodation":"abc",
+#         "ageUser": "18-40",
+#         "images": [],
+#         "location": "61ca856feb7c69eafd24c4f0"
+#     },
+#     {
+#         "users": [],
+#         "timeStart": "2020-11-25",
+#         "maxUsers": 5,
+#         "description": ["abc","DEF"],
+#         "activities": ["day", "an"],
+#         "accommodation":"abc",
+#         "ageUser": "18-40",
+#         "images": [],
+#         "location": "61ca856feb7c69eafd24c4f2"
+#     },
+#     {
+#         "users": [],
+#         "timeStart": "2020-11-26",
+#         "maxUsers": 5,
+#         "description": ["abc","DEF"],
+#         "activities": ["day", "an"],
+#         "accommodation":"abc",
+#         "ageUser": "18-40",
+#         "images": [],
+#         "location": "61ca856feb7c69eafd24c4f4"
+#     }]
+# }
+
+# GET http://localhost:5000/volunteer/622b197a5a8f304314aacde5
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxY2U3NzM0YmI5ZmIxNTIwZjQxNTcyYyIsImlhdCI6MTY0NDgyNDQxMX0.mPDebvCIN2r5jw2Lzpb1gbq_mXTL2hsdSJC7afDRS10
+
+# DELETE http://localhost:5000/volunteer/620a228f93de006ae71d1736
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxY2U3NzM0YmI5ZmIxNTIwZjQxNTcyYyIsImlhdCI6MTY0NDgyNDQxMX0.mPDebvCIN2r5jw2Lzpb1gbq_mXTL2hsdSJC7afDRS10
+
+# POST http://localhost:5000/user/login
+# Content-Type: application/json
+
+# {
+#     "email":"admin@gmail.com",
+#     "password": "Admin123456"
+# }
+
+# POST http://localhost:5000/user/confirm_account
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxY2U3NzM0YmI5ZmIxNTIwZjQxNTcyYyIsImlhdCI6MTY0NTI3OTQ4MH0.7Q1w8TZZgvdRxXajWqE98K1OS2KycWTQ0rFsvudiasI
+
+# {
+#     "cmnd": "09191536",
+#     "cmndFront": "https://res.cloudinary.com/huunguyencs/image/upload/v1638075905/background_wwpwxy.jpg",
+#     "cmndBack": "https://res.cloudinary.com/huunguyencs/image/upload/v1638075905/background_wwpwxy.jpg",
+#     "cmndFace": "https://res.cloudinary.com/huunguyencs/image/upload/v1638075905/background_wwpwxy.jpg"
+# }
+
+# DELETE http://localhost:5000/message/delete_conversation/61e220d8c273b3fa6610381d
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxY2U3NzM0YmI5ZmIxNTIwZjQxNTcyYyIsImlhdCI6MTY0NTM0MTMwOX0.C4p5cpsI90Z01fI3bQX-44pJJCfrrkLUkG1j_5B-jYM
+
+
+# POST http://localhost:5000/report/create
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyNGFiMTQzMWM0OGQ3ZDgzMTBjNTUyYyIsImlhdCI6MTY0OTI5NjQyNSwiZXhwIjoxNjQ5MzgyODI1fQ.SrPD2ldt72zinqO3JuXhNS-5v2iL8bHV62fr4G5pZfo
+
+# {
+#     "type": ["a","b","c"],
+#     "content": "abc",
+#     "postId": "624181d5e212fc8279f80ea8"
+# }
+
+# Patch  http://localhost:5000/report/624e45674fa149df992d8cc5
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY0OTI5Njk1MiwiZXhwIjoxNjQ5MzgzMzUyfQ.kq72-7hxseNEJBelJ6m3y_Mq-W3MPo-ixAHmCbjjT5s
+
+# POST http://localhost:5000/user/login
+# Content-Type: application/json
+
+# {
+#     "email":"admin@gmail.com",
+#     "password": "Admin123456"
+# }
+
+POST http://localhost:5000/help
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY1MDA5MzM4NywiZXhwIjoxNjUwMTc5Nzg3fQ.AAYnJ3oqUyn6Pu7ouggwX8hUqhwweUr3Tx4bVug25Is
+
+{
+    "description": "test",
+    "position": [108, 17],
+    "type": "hi",
+    "positionStr": "Tp Ho Chi Minh",
+    "expireAt": "Apr 17 2022 14:08:24"
+}
