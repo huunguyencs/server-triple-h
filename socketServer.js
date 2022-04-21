@@ -6,6 +6,7 @@ const SocketServer = socket => {
   //connect
   socket.on('joinUser', data => {
     if (!data.position) {
+      console.log('SOCKET CONNECT:', socket.handshake.headers);
       data.position = ip2position(socket.handshake.headers['x-forwarded-for']);
     }
     users.push({ id: data.id, socketId: socket.id, position: data.position });
