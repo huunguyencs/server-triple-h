@@ -108,16 +108,17 @@ class UserController {
 
       // const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET)
       const refreshToken = createRefreshToken({ id: user._id });
-      res.cookie('refreshtoken', refreshToken, {
-        httpOnly: true,
-        path: '/user/refresh_token',
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30days
-      });
+      // res.cookie('refreshtoken', refreshToken, {
+      //   httpOnly: true,
+      //   path: '/user/refresh_token',
+      //   maxAge: 30 * 24 * 60 * 60 * 1000 // 30days
+      // });
 
       res.success({
         success: true,
         message: 'Đăng nhập thành công!',
         accessToken,
+        refreshToken,
         user: {
           ...user._doc,
           password: ''
@@ -131,53 +132,58 @@ class UserController {
 
   async refreshToken(req, res) {
     try {
-      const refresh_token = req.cookies.refreshtoken;
+      // const refresh_token = req.cookies.refreshtoken;
+      const { refresh_token } = req.body;
       //refresh_token expire
       if (!refresh_token)
         return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
 
-      jwt.verify(refresh_token, 'REFRESH_TOKEN_SECRET', async (err, result) => {
-        // if (err) return res.status(400).json({ message: "Bạn hãy đăng nhập lại!" });
-        if (err) return res.errorClient('Bạn hãy đăng nhập lại!');
+      jwt.verify(
+        refresh_token,
+        process.env.REFRESH_TOKEN_SECRET,
+        async (err, result) => {
+          // if (err) return res.status(400).json({ message: "Bạn hãy đăng nhập lại!" });
+          if (err) return res.errorClient('Bạn hãy đăng nhập lại!');
 
-        const user = await Users.findById(result.id)
-          .select('-password')
-          .populate(
-            'followers followings',
-            'username avatar fullname followings'
-          )
-          .populate({
-            path: 'confirmAccount',
-            select: 'cmnd cmndFront cmndBack cmndFace state'
+          const user = await Users.findById(result.id)
+            .select('-password')
+            .populate(
+              'followers followings',
+              'username avatar fullname followings'
+            )
+            .populate({
+              path: 'confirmAccount',
+              select: 'cmnd cmndFront cmndBack cmndFace state'
+            });
+          // if (!user) return res.status(400).json("No token");
+          if (!user) return res.errorClient('No token');
+
+          const accessToken = createAccessToken({ id: user._id });
+
+          res.success({
+            success: true,
+            message: 'Lấy token thành công!',
+            accessToken,
+            user: {
+              ...user._doc,
+              password: ''
+            }
           });
-        // if (!user) return res.status(400).json("No token");
-        if (!user) return res.errorClient('No token');
-
-        const accessToken = createAccessToken({ id: user._id });
-
-        res.success({
-          success: true,
-          message: 'Lấy token thành công!',
-          accessToken,
-          user: {
-            ...user._doc,
-            password: ''
-          }
-        });
-      });
+        }
+      );
     } catch (err) {
       res.error(err);
     }
   }
-  async logout(req, res) {
-    try {
-      res.clearCookie('refreshtoken', { path: '/user/refresh_token' });
-      return res.success({ success: true, message: 'Đăng xuất thành công!' });
-    } catch (err) {
-      console.log(err);
-      res.error(err);
-    }
-  }
+  // async logout(req, res) {
+  //   try {
+  //     res.clearCookie('refreshtoken', { path: '/user/refresh_token' });
+  //     return res.success({ success: true, message: 'Đăng xuất thành công!' });
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.error(err);
+  //   }
+  // }
   async forgotPassword(req, res) {
     try {
       const { email } = req.body;
