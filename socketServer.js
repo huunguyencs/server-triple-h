@@ -5,6 +5,7 @@ let users = [];
 const SocketServer = socket => {
   //connect
   socket.on('joinUser', data => {
+    console.log(data.position);
     if (!data.position) {
       console.log('SOCKET CONNECT:', socket.handshake.headers);
       data.position = ip2position(socket.handshake.headers['x-forwarded-for']);
