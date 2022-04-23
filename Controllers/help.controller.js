@@ -49,7 +49,7 @@ class HelpController {
   async getHelps(req, res) {
     try {
       let { lat, lng } = req.query;
-      console.log(lat, lng);
+      console.log('GET HELP POSITION:', lat, lng);
       if (lat === 'undefined' || lng === 'undefined') {
         console.log('HEADER GET HELP:', req.headers);
         if (!req.headers['x-forwarded-for']) {
