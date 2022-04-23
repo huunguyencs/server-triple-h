@@ -49,7 +49,9 @@ class HelpController {
   async getHelps(req, res) {
     try {
       let { lat, lng } = req.query;
+      console.log('GET HELP POSITION:', lat, lng);
       if (lat === 'undefined' || lng === 'undefined') {
+        console.log('HEADER GET HELP:', req.headers);
         if (!req.headers['x-forwarded-for']) {
           return res.error({ message: 'Not found your position' });
         }
@@ -57,6 +59,8 @@ class HelpController {
         lat = temp.latitude;
         lng = temp.longitude;
       }
+
+      console.log('GET HELP:', lat, lng);
       lat = parseFloat(lat);
       lng = parseFloat(lng);
 

@@ -26,7 +26,8 @@ class TourController {
         tour,
         provinces,
         locations,
-        cost
+        cost,
+        isPublic
       } = req.body;
 
       const joinIds = [req.user._id];
@@ -42,7 +43,8 @@ class TourController {
         joinIds,
         tour: [],
         locations,
-        cost
+        cost,
+        isPublic
       });
 
       await newTour.save();
@@ -375,6 +377,10 @@ class TourController {
         sort = { score: { $meta: 'textScore' } };
         score = sort;
       }
+      query = {
+        ...query,
+        isPublic: true
+      };
 
       // Tours.createIndexes()
       // Tours.createIndexes({'$**': 'text'});
@@ -430,7 +436,14 @@ class TourController {
       }
       var { offset } = req.query;
       offset = offset || 0;
-      const tours = await Tours.find({ userId: req.params.id })
+
+      const query = {
+        userId: req.params.id
+      };
+      if (!req.user || req.user._id !== req.params.id) {
+        query.isPublic = true;
+      }
+      const tours = await Tours.find(query)
         .sort('-createdAt')
         .skip(offset * 5)
         .limit(5)
@@ -472,7 +485,10 @@ class TourController {
       // console.log(req.params.id)
       let tour = await Tours.findById(req.params.id);
       let requestId;
-      if (!tour) {
+      if (
+        !tour ||
+        (!tour.isPublic && (!req.user || req.user._id !== tour.userId))
+      ) {
         res.status(404).json({ success: false, message: 'not found' });
         return;
       }
