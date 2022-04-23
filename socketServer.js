@@ -5,6 +5,7 @@ let users = [];
 const SocketServer = socket => {
   //connect
   socket.on('joinUser', data => {
+    console.log(users);
     console.log('SOCKET POSITION:', data.position);
     if (!data.position) {
       console.log('SOCKET CONNECT:', socket.handshake.headers);

@@ -89,10 +89,12 @@ class HelpController {
   async getMyHelps(req, res) {
     try {
       const helps = await Helps.find({ userId: req.user._id });
-      res.success({
-        success: true,
-        helps
-      });
+      res
+        .success({
+          success: true,
+          helps
+        })
+        .populate('userId', 'avatar fullname');
     } catch (err) {
       res.error(err);
     }
@@ -126,7 +128,7 @@ class HelpController {
           }
         },
         { new: true }
-      );
+      ).populate('userId', 'avatar fullname');
 
       res.success({
         success: true,
