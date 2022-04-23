@@ -5,7 +5,12 @@ const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
 const sendEmail = require('../utils/sendEmail');
-const { createUser, saveItem, unSaveItem } = require('../utils/recombee');
+const {
+  createUser,
+  saveItem,
+  unSaveItem,
+  getFollowRecomment
+} = require('../utils/recombee');
 
 class UserController {
   async register(req, res) {
@@ -513,7 +518,14 @@ class UserController {
         }
       }
 
-      // console.log(rawArrFriend);
+      const recombeeUser = await getFollowRecomment(req.user._id);
+      console.log('RECOMMEND USER:', recombeeUser);
+      if (recombeeUser) {
+        rawArrFriend = [
+          ...rawArrFriend,
+          ...recombeeUser.recomms.map(item => item.id)
+        ];
+      }
 
       rawArrFriend = rawArrFriend.filter(item => !followeds.includes(item));
 

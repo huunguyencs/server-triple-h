@@ -9,7 +9,14 @@ const SocketServer = socket => {
     console.log('SOCKET POSITION:', data.position);
     if (!data.position) {
       console.log('SOCKET CONNECT:', socket.handshake.headers);
-      data.position = ip2position(socket.handshake.headers['x-forwarded-for']);
+      if (data.ipv4) {
+        data.position = ip2position(data.ipv4);
+      } else {
+        if (socket.handshake.headers['x-forwarded-for'])
+          data.position = ip2position(
+            socket.handshake.headers['x-forwarded-for']
+          );
+      }
     }
     users.push({ id: data.id, socketId: socket.id, position: data.position });
   });

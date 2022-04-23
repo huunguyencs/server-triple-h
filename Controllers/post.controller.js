@@ -401,7 +401,8 @@ class PostController {
         .limit(80)
         .sort({ createdAt: -1 });
 
-      var postRecommendId = getPostRecomment(req.user._id, 20);
+      let postRecommendId = await getPostRecomment(req.user._id, 20);
+      console.log('RECOMMEND:', postRecommendId);
       if (postRecommendId) {
         postRecommendId = postRecommendId.recomms.map(item => item.id);
         postId = postId.concat(

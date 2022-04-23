@@ -4,13 +4,15 @@ const { ip2position } = require('../utils/ip2position');
 class HelpController {
   async createHelp(req, res) {
     try {
-      let { description, position, type, positionStr, contact, expireAt } =
+      let { description, position, type, positionStr, contact, expireAt, ip } =
         req.body;
 
-      console.log(req.headers['x-forwarded-for']);
-
+      console.log('HEADER CREATE HELP:', req.headers);
       if (!position) {
-        const temp = ip2position(req.headers['x-forwarded-for']);
+        let temp;
+        if (ip) {
+          temp = ip2position(ip);
+        } else temp = ip2position(req.headers['x-forwarded-for']);
         position = [temp.longitude, temp.latitude];
       }
 
@@ -48,14 +50,23 @@ class HelpController {
 
   async getHelps(req, res) {
     try {
-      let { lat, lng } = req.query;
-      console.log('GET HELP POSITION:', lat, lng);
-      if (lat === 'undefined' || lng === 'undefined') {
-        console.log('HEADER GET HELP:', req.headers);
-        if (!req.headers['x-forwarded-for']) {
-          return res.error({ message: 'Not found your position' });
+      let { lat, lng, ip } = req.query;
+      console.log('GET HELP POSITION:', lat, lng, ip);
+      if (!lat || !lng || lat === 'undefined' || lng === 'undefined') {
+        let ipClient;
+        if (ip) {
+          ipClient = ip;
+        } else {
+          if (!req.headers['x-forwarded-for']) {
+            return res.error({ message: 'Not found your position' });
+          }
+          ipClient = req.headers['x-forwarded-for'];
         }
-        let temp = ip2position(req.headers['x-forwarded-for']);
+        // console.log('HEADER GET HELP:', req.headers);
+        // if (!req.headers['x-forwarded-for']) {
+        //   return res.error({ message: 'Not found your position' });
+        // }
+        let temp = ip2position(ipClient);
         lat = temp.latitude;
         lng = temp.longitude;
       }
