@@ -121,6 +121,7 @@ const SocketServer = socket => {
           latitude: data.position[1]
         }) < 5000
     );
+    console.log('CREATE HELP USER RECEIVE:', clients);
     if (clients.length > 0) {
       clients.forEach(user => {
         socket.to(user.socketId).emit('addHelpToClient', data);

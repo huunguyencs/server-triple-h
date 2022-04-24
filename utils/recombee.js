@@ -1,5 +1,4 @@
 const recombee = require('recombee-api-client');
-const { DeleteItem } = require('recombee-api-client/lib/requests');
 let rqs = recombee.requests;
 
 const recombeeClient = new recombee.ApiClient(
@@ -117,7 +116,7 @@ function createItem(id, type, categories, description) {
 }
 
 function deleteItem(id) {
-  recombeeClient.send(DeleteItem(id));
+  recombeeClient.send(rqs.DeleteItem(id));
 }
 
 function createUser(id, pref) {
