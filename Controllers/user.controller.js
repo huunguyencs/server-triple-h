@@ -283,7 +283,16 @@ class UserController {
   }
   async editProfile(req, res) {
     try {
-      const { username, fullname, email, phone, birthday, gender } = req.body;
+      const {
+        username,
+        fullname,
+        email,
+        phone,
+        birthday,
+        gender,
+        andress,
+        hobbies
+      } = req.body;
 
       const user = await Users.findById(req.user._id);
 
@@ -312,7 +321,9 @@ class UserController {
           email,
           phone,
           birthday,
-          gender
+          gender,
+          andress,
+          hobbies
         },
         { new: true }
       );
@@ -525,6 +536,16 @@ class UserController {
           ...rawArrFriend,
           ...recombeeUser.recomms.map(item => item.id)
         ];
+      }
+
+      if (user.hobbies) {
+        const hobbies = user.hobbies.split(',').map(item => `/${item}/`);
+
+        const mutualHobbie = await Users.find({
+          hobbies: { $in: hobbies }
+        });
+
+        rawArrFriend = [...rawArrFriend, ...mutualHobbie];
       }
 
       rawArrFriend = rawArrFriend.filter(item => !followeds.includes(item));

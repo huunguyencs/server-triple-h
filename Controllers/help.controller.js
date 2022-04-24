@@ -99,13 +99,14 @@ class HelpController {
 
   async getMyHelps(req, res) {
     try {
-      const helps = await Helps.find({ userId: req.user._id });
-      res
-        .success({
-          success: true,
-          helps
-        })
-        .populate('userId', 'avatar fullname');
+      const helps = await Helps.find({ userId: req.user._id }).populate(
+        'userId',
+        'avatar fullname'
+      );
+      res.success({
+        success: true,
+        helps
+      });
     } catch (err) {
       res.error(err);
     }
@@ -117,7 +118,7 @@ class HelpController {
       const help = await Helps.findOneAndUpdate(
         { _id: id, userId: req.user._id },
         req.body
-      );
+      ).populate('userId', 'avatar fullname');
 
       res.success({
         success: true,
@@ -153,7 +154,7 @@ class HelpController {
   async deleteHelp(req, res) {
     try {
       const { id } = req.params;
-      await Helps.findByIdAndDelete(id);
+      await Helps.findOneAndRemove({ _id: id, userId: req.user._id });
       res.deleted({
         success: true
       });

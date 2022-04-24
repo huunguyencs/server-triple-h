@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Types.ObjectId,
       ref: 'confirms'
     },
-    hobbies: [{ type: String }],
+    hobbies: String,
     address: {
       type: String,
       default: ''
