@@ -114,6 +114,7 @@ const SocketServer = socket => {
 
   //help
   socket.on('createHelp', data => {
+    console.log(data);
     const clients = users.filter(
       user =>
         distance(user.position, {
