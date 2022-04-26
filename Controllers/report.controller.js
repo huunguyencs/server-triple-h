@@ -1,4 +1,5 @@
-const Reports = require('../Models/report.model')
+const Reports = require('../Models/report.model');
+const Posts =require('../Models/post.model');
 
 class ReportController {
     async createReport(req, res) {
@@ -86,6 +87,23 @@ class ReportController {
             }
         }
         catch (err) {
+            res.error(err);
+        }
+    }
+
+    async finishAndDelete(req, res) {
+        try {
+            const report = await Reports.findOneAndUpdate({ _id: req.params.id}, {
+                state: 2
+            }, {new: true});
+            await Posts.findByIdAndDelete(req.body.postId);
+
+            res.success({
+                success: true,
+                report
+            })
+
+        } catch (err) {
             res.error(err);
         }
     }
