@@ -720,7 +720,7 @@ class PostController {
 
   async getAll(req, res) {
     try {
-      const posts = await Posts.find({}, { _id: 1, createdAt: 1 });
+      const posts = await Posts.find({}, { _id: 1, createdAt: 1, isPostReview: 1 });
       res.success({
         success: true,
         posts
