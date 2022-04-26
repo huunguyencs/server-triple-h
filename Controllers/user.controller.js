@@ -529,14 +529,14 @@ class UserController {
         }
       }
 
-      const recombeeUser = await getFollowRecomment(req.user._id);
-      console.log('RECOMMEND USER:', recombeeUser);
-      if (recombeeUser) {
-        rawArrFriend = [
-          ...rawArrFriend,
-          ...recombeeUser.recomms.map(item => item.id)
-        ];
-      }
+      // const recombeeUser = await getFollowRecomment(req.user._id);
+      // console.log('RECOMMEND USER:', recombeeUser);
+      // if (recombeeUser) {
+      //   rawArrFriend = [
+      //     ...rawArrFriend,
+      //     ...recombeeUser.recomms.map(item => item.id)
+      //   ];
+      // }
 
       if (user.hobbies) {
         const hobbies = user.hobbies.split(',').map(item => `/${item}/`);

@@ -392,23 +392,30 @@ class PostController {
   //lấy nhiều post gắn lên trang feed theo người mình theo dõi  hoặc  group
   async getPosts(req, res) {
     try {
-      var postId = await Posts.find({
-        userId: {
-          $in: req.user.followings
+      let postId = await Posts.find(
+        {
+          userId: {
+            $in: req.user.followings
+          },
+          isPublic: true
         },
-        isPublic: true
-      })
+        { _id: 1 }
+      )
         .limit(80)
         .sort({ createdAt: -1 });
 
-      let postRecommendId = await getPostRecomment(req.user._id, 20);
-      console.log('RECOMMEND:', postRecommendId);
-      if (postRecommendId) {
-        postRecommendId = postRecommendId.recomms.map(item => item.id);
-        postId = postId.concat(
-          postRecommendId.filter(item => postId.indexOf(item) < 0)
-        );
-      }
+      postId = postId.map(item => item._id);
+
+      // let postRecommendId = await getPostRecomment(req.user._id, 20);
+      // console.log('RECOMMEND:', postRecommendId);
+      // if (postRecommendId?.recomms) {
+      //   postRecommendId = postRecommendId.recomms.map(item => item.id);
+      //   postId = postId.concat(
+      //     postRecommendId.filter(item => postId.indexOf(item) < 0)
+      //   );
+      // }
+
+      console.log(postId);
 
       postId = shuffle(postId);
       var currentPostId = postId.slice(0, 10);
