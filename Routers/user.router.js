@@ -7,7 +7,7 @@ const authRole = require('../Middlewares/authRole');
 router.post('/register', UserController.register);
 router.post('/login', UserController.login);
 
-router.post('/logout', UserController.logout);
+// router.post('/logout', UserController.logout);
 router.post('/activate_email', UserController.activateEmail);
 router.post('/refresh_token', UserController.refreshToken);
 router.post('/forgot_password', UserController.forgotPassword);

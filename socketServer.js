@@ -5,8 +5,18 @@ let users = [];
 const SocketServer = socket => {
   //connect
   socket.on('joinUser', data => {
+    console.log(users);
+    console.log('SOCKET POSITION:', data.position);
     if (!data.position) {
-      data.position = ip2position(socket.handshake.headers['x-forwarded-for']);
+      console.log('SOCKET CONNECT:', socket.handshake.headers);
+      if (data.ipv4) {
+        data.position = ip2position(data.ipv4);
+      } else {
+        if (socket.handshake.headers['x-forwarded-for'])
+          data.position = ip2position(
+            socket.handshake.headers['x-forwarded-for']
+          );
+      }
     }
     users.push({ id: data.id, socketId: socket.id, position: data.position });
   });
@@ -104,6 +114,7 @@ const SocketServer = socket => {
 
   //help
   socket.on('createHelp', data => {
+    console.log(data);
     const clients = users.filter(
       user =>
         distance(user.position, {
@@ -111,6 +122,7 @@ const SocketServer = socket => {
           latitude: data.position[1]
         }) < 5000
     );
+    console.log('CREATE HELP USER RECEIVE:', clients);
     if (clients.length > 0) {
       clients.forEach(user => {
         socket.to(user.socketId).emit('addHelpToClient', data);
