@@ -11,7 +11,8 @@ router.post('/create_review', auth, PostController.createReview);
 router.post('/share', auth, PostController.sharePost);
 router.get('/posts', auth, PostController.getPosts);
 router.get('/search', PostController.search);
-router.post('/list', PostController.postList)
+router.post('/list', PostController.postList);
+router.get('/all', PostController.getAll);
 
 router.get('/:id', fakeAuth, PostController.getPost);
 router.patch('/:id', auth, PostController.updatePost);

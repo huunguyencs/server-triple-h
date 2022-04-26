@@ -717,6 +717,18 @@ class PostController {
       res.error(err);
     }
   }
+
+  async getAll(req, res) {
+    try {
+      const posts = await Posts.find({}, { _id: 1, createdAt: 1 });
+      res.success({
+        success: true,
+        posts
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new PostController();
