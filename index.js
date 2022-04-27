@@ -21,7 +21,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
   pingTimeout: 60000,
   cors: {
-    origin: 'https://triple-h.herokuapp.com/'
+    origin: 'https://triple-h.herokuapp.com'
   }
 });
 
