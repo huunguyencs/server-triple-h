@@ -151,6 +151,23 @@ class HelpController {
     }
   }
 
+  async getHelpDetail(req, res) {
+    try {
+      const { id } = req.params;
+      const help = await Helps.findById(id).populate(
+        'userId',
+        'avatar fullname'
+      );
+      if (!help) return res.notFound('Không tìm thấy trợ giúp');
+      res.success({
+        success: true,
+        help
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
   async deleteHelp(req, res) {
     try {
       const { id } = req.params;

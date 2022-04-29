@@ -665,13 +665,15 @@ class PostController {
 
   async postList(req, res) {
     try {
-      const { list } = req.body;
-      var { offset, detail, limit } = req.query;
+      let { list } = req.body;
+      let { offset, detail, limit } = req.query;
       offset = offset || 0;
       detail = detail || false;
       limit = limit || 0;
 
-      var posts;
+      list = list.map(item => ObjectId(item));
+
+      let posts;
 
       if (detail) {
         posts = await Posts.find({
@@ -714,13 +716,17 @@ class PostController {
 
       res.success({ success: true, posts });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
 
   async getAll(req, res) {
     try {
-      const posts = await Posts.find({}, { _id: 1, createdAt: 1, isPostReview: 1 });
+      const posts = await Posts.find(
+        {},
+        { _id: 1, createdAt: 1, isPostReview: 1 }
+      );
       res.success({
         success: true,
         posts
