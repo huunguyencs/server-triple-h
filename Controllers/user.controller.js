@@ -530,7 +530,7 @@ class UserController {
       }
 
       const recombeeUser = await getFollowRecomment(req.user._id);
-      console.log('RECOMMEND USER:', recombeeUser);
+      // console.log('RECOMMEND USER:', recombeeUser);
       if (recombeeUser) {
         rawArrFriend = [
           ...rawArrFriend,

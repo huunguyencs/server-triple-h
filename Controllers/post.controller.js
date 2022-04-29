@@ -402,7 +402,7 @@ class PostController {
         .sort({ createdAt: -1 });
 
       let postRecommendId = await getPostRecomment(req.user._id, 20);
-      console.log('RECOMMEND:', postRecommendId);
+      // console.log('RECOMMEND:', postRecommendId);
       if (postRecommendId) {
         postRecommendId = postRecommendId.recomms.map(item => item.id);
         postId = postId.concat(
@@ -546,7 +546,8 @@ class PostController {
       res.success({
         success: true,
         message: 'unlike post success',
-        likes: post.likes
+        likes: post.likes,
+        post
       });
 
       unLikeItem(req.user._id, req.params.id);

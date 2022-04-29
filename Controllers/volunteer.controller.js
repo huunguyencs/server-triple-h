@@ -178,7 +178,45 @@ class VolunteerController {
 
     async getVolunteers(req, res) {
         try {
-            const volunteers = await Volunteers.find({}).sort("-createdAt")
+            var { offset, maxCost, minCost, q } = req.query;
+            // offset = offset ? parseInt(offset) : 0;
+            maxCost = maxCost ? parseInt(maxCost) : null;
+            minCost = minCost ? parseInt(minCost) : null;
+            var query = {};
+            var sort = '-createdAt';
+            var score = {};
+
+            if (maxCost && maxCost !== 1000) {
+                query = {
+                cost: {
+                    $lte: maxCost
+                }
+                };
+            }
+            if (minCost && minCost !== 0) {
+                query = {
+                ...query,
+                cost: {
+                    ...query.cost,
+                    $gte: minCost
+                }
+                };
+            }
+            if (q && q !== '') {
+                query = {
+                ...query,
+                $text: {
+                    $search: q
+                }
+                };
+                sort = { score: { $meta: 'textScore' } };
+                score = sort;
+            }
+            query = {
+                ...query
+            };
+            const volunteers = await Volunteers.find(query, score)
+                .sort(sort)
                 .populate("userId", "username fullname avatar")
                 .populate("date", "accommodation date activities")
                 .populate({
