@@ -9,10 +9,13 @@ const appResponse = require('./utils/appResponse');
 // middleware
 const app = express();
 app.use(express.json());
+
 // accept cors
 app.use(cors());
 app.use(cookieParser());
 app.use(appResponse);
+
+const http = require('http').createServer(app);
 
 // Port
 const PORT = process.env.PORT;
