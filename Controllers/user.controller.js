@@ -707,6 +707,15 @@ class UserController {
 
   async updateStatus(req, res) {
     try {
+      const { id, status, role, idConfirm } = req.body;
+      if (!id) return res.notFound('Không tìm thấy user');
+      if (status) {
+        await Confirms.findOneAndUpdate({ _id: idConfirm }, { state: status });
+      }
+      if (role) {
+        await Users.findOneAndUpdate({ _id: id }, { role });
+      }
+      res.success({ success: true, message: 'Cập nhật thành công!' });
     } catch (err) {}
   }
 
