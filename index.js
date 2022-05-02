@@ -4,8 +4,6 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const cookieParser = require('cookie-parser');
-const SocketServer = require('./socketServer');
-const { request } = require('http');
 const appResponse = require('./utils/appResponse');
 
 // middleware
@@ -15,19 +13,6 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 app.use(appResponse);
-
-//Socket
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
-  pingTimeout: 60000,
-  cors: {
-    origin: 'https://triple-h.herokuapp.com'
-  }
-});
-
-io.on('connection', socket => {
-  SocketServer(socket);
-});
 
 // Port
 const PORT = process.env.PORT;
