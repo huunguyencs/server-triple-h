@@ -416,6 +416,14 @@ class PostController {
       // }
 
       console.log(postId);
+      let postRecommendId = await getPostRecomment(req.user._id, 20);
+      // console.log('RECOMMEND:', postRecommendId);
+      if (postRecommendId) {
+        postRecommendId = postRecommendId.recomms.map(item => item.id);
+        postId = postId.concat(
+          postRecommendId.filter(item => postId.indexOf(item) < 0)
+        );
+      }
 
       postId = shuffle(postId);
       var currentPostId = postId.slice(0, 10);
@@ -553,7 +561,8 @@ class PostController {
       res.success({
         success: true,
         message: 'unlike post success',
-        likes: post.likes
+        likes: post.likes,
+        post
       });
 
       unLikeItem(req.user._id, req.params.id);

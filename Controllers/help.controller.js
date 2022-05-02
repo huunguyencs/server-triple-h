@@ -51,7 +51,7 @@ class HelpController {
   async getHelps(req, res) {
     try {
       let { lat, lng, ip } = req.query;
-      console.log('GET HELP POSITION:', lat, lng, ip);
+      // console.log('GET HELP POSITION:', lat, lng, ip);
       if (!lat || !lng || lat === 'undefined' || lng === 'undefined') {
         let ipClient;
         if (ip) {
@@ -71,7 +71,7 @@ class HelpController {
         lng = temp.longitude;
       }
 
-      console.log('GET HELP:', lat, lng);
+      // console.log('GET HELP:', lat, lng);
       lat = parseFloat(lat);
       lng = parseFloat(lng);
 
