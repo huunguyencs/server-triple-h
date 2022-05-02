@@ -2,6 +2,7 @@ const Posts = require('../Models/post.model');
 const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
+const LocationsRate = require('../Models/locationsRate.model');
 const {
   createItem,
   shareItem,
@@ -191,9 +192,14 @@ class PostController {
           default:
             break;
         }
+        const rateLoc = new LocationsRate({
+          location_id: locationId,
+          user_id: req.user._id,
+          rate: parseInt(rate)
+        });
+        await rateLoc.save();
+        reviewItem(req.user._id, locationId, rate);
       }
-
-      reviewItem(req.user._id, locationId, rate);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -337,6 +343,14 @@ class PostController {
           default:
             break;
         }
+
+        const locationRate = new LocationsRate({
+          location_id: locationId,
+          user_id: req.user._id,
+          rate: parseInt(rate)
+        });
+
+        await locationRate.save();
       }
     } catch (err) {
       console.log(err);

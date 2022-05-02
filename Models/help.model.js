@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-const helpSchema = new mongoose.Schema({
+const helpSchema = new mongoose.Schema(
+  {
     userId: { type: mongoose.Types.ObjectId, ref: 'users' },
     description: String,
     position: [Number], //lng, lat
@@ -8,9 +9,12 @@ const helpSchema = new mongoose.Schema({
     contact: String,
     positionStr: String,
     state: [{ type: mongoose.Types.ObjectId, ref: 'users' }]
-}, {
+  },
+  {
     timestamps: true
-})
+  }
+);
 
+helpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 3600 });
 
-module.exports = mongoose.model('helps', helpSchema)
+module.exports = mongoose.model('helps', helpSchema);

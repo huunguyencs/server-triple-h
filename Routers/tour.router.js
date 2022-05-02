@@ -8,9 +8,9 @@ router.post('/create', auth, TourController.createTour);
 router.post('/share', auth, TourController.shareTour);
 router.get('/tours', TourController.getTours);
 router.get('/search', TourController.search);
+router.get('/hot', TourController.tourHot);
 
 router.get('/user/:id', TourController.getUserTour);
-
 
 router.get('/:id', fakeAuth, TourController.getTour);
 router.patch('/:id', auth, TourController.updateTour);
@@ -22,11 +22,10 @@ router.patch('/:id/unlike', auth, TourController.unlikeTour);
 router.patch('/:id/join', auth, TourController.joinTour);
 router.patch('/:id/unjoin', auth, TourController.unJoinTour);
 router.patch('/:id/remove_join', auth, TourController.removeJoin);
-router.patch('/:id/join_loc', auth, TourController.joinLocation)
-router.patch('/:id/unjoin_loc', auth, TourController.unjoinLocation)
-router.patch('/:id/remove_join_loc', auth, TourController.removeJoinLocation)
+router.patch('/:id/join_loc', auth, TourController.joinLocation);
+router.patch('/:id/unjoin_loc', auth, TourController.unjoinLocation);
+router.patch('/:id/remove_join_loc', auth, TourController.removeJoinLocation);
 
-router.patch('/:id/remove_review', auth, TourController.removeReview)
-
+router.patch('/:id/remove_review', auth, TourController.removeReview);
 
 module.exports = router;

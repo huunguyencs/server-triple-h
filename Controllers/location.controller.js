@@ -1,4 +1,5 @@
 const Locations = require('../Models/location.model');
+const LocationsRate = require('../Models/locationsRate.model');
 const Posts = require('../Models/post.model');
 const Provinces = require('../Models/province.model');
 const { createItem, viewDetailItem } = require('../utils/recombee');
@@ -166,11 +167,55 @@ class LocationController {
 
   async getHotLocations(req, res) {
     try {
-      const locations = await Locations.find({}).limit(5);
+      const THIRTY_DAY_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const hot = await LocationsRate.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: THIRTY_DAY_AGO
+            }
+          }
+        },
+        {
+          $addFields: {
+            trendScore: {
+              $divide: [
+                { $multiply: ['$rate', 1000] },
+                { $subtract: [new Date(), '$createdAt'] }
+              ]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$location_id',
+            totalScore: {
+              $sum: '$trendScore'
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'locations',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'location'
+          }
+        },
+        {
+          $sort: {
+            totalScore: -1
+          }
+        },
+        {
+          $limit: 10
+        }
+      ]);
       res.success({
         success: true,
         message: 'success',
-        locations
+        hot
       });
     } catch (err) {
       res.error(err);
