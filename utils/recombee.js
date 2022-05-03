@@ -182,32 +182,32 @@ function reviewItem(userId, itemId, rate) {
   rating(userId, itemId, rate);
 }
 
-async function getPostRecomment(userId, count = 10) {
+async function getPostRecommend(userId, count = 10) {
   const res = await getRecomment(userId, count, 'post');
   return res;
 }
 
-async function getTourRecomment(userId, count = 10) {
+async function getTourRecommend(userId, count = 10) {
   const res = await getRecomment(userId, count, 'tour');
   return res;
 }
 
-async function getLocationRecomment(userId, count = 10) {
+async function getLocationRecommend(userId, count = 10) {
   const res = await getRecomment(userId, count, 'location');
   return res;
 }
 
-async function getVolunteerRecomment(userId, count = 10) {
+async function getVolunteerRecommend(userId, count = 10) {
   const res = await getRecomment(userId, count, 'volunteer');
   return res;
 }
 
-async function getServiceRecomment(userId, count = 10) {
+async function getServiceRecommend(userId, count = 10) {
   const res = await getRecomment(userId, count, 'service');
   return res;
 }
 
-async function getFollowRecomment(userId, count = 10) {
+async function getFollowRecommend(userId, count = 10) {
   const res = await getUserRecomment(userId, count);
   return res;
 }
@@ -228,10 +228,10 @@ module.exports = {
   saveItem,
   unSaveItem,
   reviewItem,
-  getPostRecomment,
-  getTourRecomment,
-  getLocationRecomment,
-  getVolunteerRecomment,
-  getServiceRecomment,
-  getFollowRecomment
+  getPostRecommend,
+  getTourRecommend,
+  getLocationRecommend,
+  getVolunteerRecommend,
+  getServiceRecommend,
+  getFollowRecommend
 };

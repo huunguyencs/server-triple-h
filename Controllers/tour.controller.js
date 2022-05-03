@@ -10,7 +10,8 @@ const {
   deleteItem,
   joinItem,
   unJoinItem,
-  viewDetailItem
+  viewDetailItem,
+  getTourRecommend
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -944,6 +945,50 @@ class TourController {
         success: true,
         hot
       });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getTourRecommend(req, res) {
+    try {
+      let tourRecommendId = await getTourRecommend(req.user._id, 10);
+      if (tourRecommendId) {
+        tourRecommendId = tourRecommendId.recomms.map(item => item.id);
+        const tours = await Tours.find({
+          _id: {
+            $in: tourRecommendId
+          }
+        })
+          .populate('userId joinIds likes', 'username fullname avatar')
+          .populate('tour', 'date')
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'userId',
+              select: 'username fullname avatar'
+            }
+          })
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'tour',
+              select: 'date'
+            }
+          })
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'joinIds',
+              select: 'username fullname avatar'
+            }
+          });
+        return res.success({
+          success: true,
+          tours
+        });
+        res.notFound('Không tìm thấy tour gợi ý');
+      }
     } catch (err) {
       res.error(err);
     }

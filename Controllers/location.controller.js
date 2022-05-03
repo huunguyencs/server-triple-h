@@ -2,7 +2,11 @@ const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
 const Posts = require('../Models/post.model');
 const Provinces = require('../Models/province.model');
-const { createItem, viewDetailItem } = require('../utils/recombee');
+const {
+  createItem,
+  viewDetailItem,
+  getLocationRecommend
+} = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
 
@@ -267,6 +271,28 @@ class LocationController {
       }));
 
       res.success({ success: true, results: locations, query: q });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getRecommendLocation(req, res) {
+    try {
+      let locationRecommend = await getLocationRecommend(req.user._id);
+      if (locationRecommend) {
+        locationRecommend = locationRecommend.recomms.map(item => item.id);
+        const locations = await Locations.find({
+          _id: {
+            $in: locationRecommend
+          }
+        });
+
+        return res.success({
+          success: true,
+          locations
+        });
+      }
+      res.notFound('Không tìm thấy địa điểm gợi ý');
     } catch (err) {
       res.error(err);
     }

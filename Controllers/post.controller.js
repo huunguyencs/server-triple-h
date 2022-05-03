@@ -10,7 +10,7 @@ const {
   likeItem,
   unLikeItem,
   viewDetailItem,
-  getPostRecomment
+  getPostRecommend
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -420,17 +420,8 @@ class PostController {
 
       postId = postId.map(item => item._id);
 
-      // let postRecommendId = await getPostRecomment(req.user._id, 20);
-      // console.log('RECOMMEND:', postRecommendId);
-      // if (postRecommendId?.recomms) {
-      //   postRecommendId = postRecommendId.recomms.map(item => item.id);
-      //   postId = postId.concat(
-      //     postRecommendId.filter(item => postId.indexOf(item) < 0)
-      //   );
-      // }
-
       console.log(postId);
-      let postRecommendId = await getPostRecomment(req.user._id, 20);
+      let postRecommendId = await getPostRecommend(req.user._id, 20);
       // console.log('RECOMMEND:', postRecommendId);
       if (postRecommendId) {
         postRecommendId = postRecommendId.recomms.map(item => item.id);
