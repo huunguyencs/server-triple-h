@@ -127,6 +127,21 @@ function createItem(id, type, categories, description) {
     });
 }
 
+function updatePropsItem(id, type, categories, description) {
+  let value = { type: type };
+  if (categories) value.categories = categories;
+  if (description) value.description = description;
+  const task = new rqs.SetItemValues(id, value);
+  recombeeClient
+    .send(task)
+    .then(() => {
+      console.log('Set item value successful');
+    })
+    .catch(() => {
+      console.log('Set item value fail');
+    });
+}
+
 function deleteItem(id) {
   recombeeClient.send(rqs.DeleteItem(id));
 }
@@ -261,5 +276,6 @@ module.exports = {
   getServiceRecommend,
   getFollowRecommend,
   getSimilarTour,
-  setPrefUser
+  setPrefUser,
+  updatePropsItem
 };

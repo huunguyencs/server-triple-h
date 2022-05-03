@@ -5,7 +5,8 @@ const Provinces = require('../Models/province.model');
 const {
   createItem,
   viewDetailItem,
-  getLocationRecommend
+  getLocationRecommend,
+  updatePropsItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -77,6 +78,13 @@ class LocationController {
         message: 'update Location successful',
         location
       });
+
+      updatePropsItem(
+        req.params.id,
+        'location',
+        [location.province_name, location.fullname],
+        information
+      );
     } catch (err) {
       res.error(err);
     }

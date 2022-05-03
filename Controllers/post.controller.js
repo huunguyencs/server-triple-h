@@ -10,7 +10,8 @@ const {
   likeItem,
   unLikeItem,
   viewDetailItem,
-  getPostRecommend
+  getPostRecommend,
+  updatePropsItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -242,6 +243,8 @@ class PostController {
           }
         });
       res.success({ success: true, message: 'update post successful', post });
+
+      updatePropsItem(req.params.id, 'post', hashtags, content);
 
       if (rate && parseInt(rate) !== parseInt(oldRate)) {
         switch (parseInt(oldRate)) {

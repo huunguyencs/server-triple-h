@@ -12,7 +12,8 @@ const {
   unJoinItem,
   viewDetailItem,
   getTourRecommend,
-  getSimilarTour
+  getSimilarTour,
+  updatePropsItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -252,6 +253,13 @@ class TourController {
           message: 'update tour successful',
           newTour
         });
+
+        updatePropsItem(
+          req.params.id,
+          'tour',
+          [...hashtags, ...provinces, ...locations],
+          content
+        );
       } else {
         res.notFound('Không tìm thấy tour');
       }
