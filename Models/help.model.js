@@ -15,6 +15,6 @@ const helpSchema = new mongoose.Schema(
   }
 );
 
-helpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 3600 });
+helpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 * 2 });
 
 module.exports = mongoose.model('helps', helpSchema);

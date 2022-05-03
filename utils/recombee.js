@@ -3,7 +3,8 @@ let rqs = recombee.requests;
 
 const recombeeClient = new recombee.ApiClient(
   process.env.RECOMBEE_DB,
-  process.env.RECOMBEE_TOKEN
+  process.env.RECOMBEE_TOKEN,
+  { region: 'ap-se' }
 );
 
 function rating(userId, itemId, rating) {
