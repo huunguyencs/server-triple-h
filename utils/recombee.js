@@ -131,17 +131,27 @@ function deleteItem(id) {
   recombeeClient.send(rqs.DeleteItem(id));
 }
 
-function createUser(id, pref) {
-  let item = [];
-  item.push(new rqs.AddUser(id));
-  if (pref) item.push(new rqs.SetUserValues(id, { pref: new Set(pref) }));
+function createUser(id) {
+  const item = new rqs.AddUser(id);
   recombeeClient
-    .send(new rqs.Batch(item))
+    .send(item)
     .then(res => {
       console.log(`Create ${id} successful`);
     })
     .catch(err => {
       console.log(`Create ${id} fail`);
+    });
+}
+
+function setPrefUser(id, pref) {
+  const task = new rqs.SetUserValues(id, { pref: new Set(pref) });
+  recombeeClient
+    .send(task)
+    .then(() => {
+      console.log('set pref user successful');
+    })
+    .catch(() => {
+      console.log('set pref user fail');
     });
 }
 
@@ -250,5 +260,6 @@ module.exports = {
   getVolunteerRecommend,
   getServiceRecommend,
   getFollowRecommend,
-  getSimilarTour
+  getSimilarTour,
+  setPrefUser
 };
