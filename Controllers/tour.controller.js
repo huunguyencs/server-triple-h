@@ -11,7 +11,8 @@ const {
   joinItem,
   unJoinItem,
   viewDetailItem,
-  getTourRecommend
+  getTourRecommend,
+  getSimilarTour
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -987,11 +988,30 @@ class TourController {
           success: true,
           tours
         });
-        res.notFound('Không tìm thấy tour gợi ý');
       }
+      res.notFound('Không tìm thấy tour gợi ý');
     } catch (err) {
       res.error(err);
     }
+  }
+
+  async getSimilar(req, res) {
+    try {
+      let tourSimilar = await getSimilarTour(req.params.id);
+      if (tourSimilar) {
+        tourSimilar = tourSimilar.recomms.map(item => item.id);
+        const tours = await Tours.find({
+          _id: { $in: tourSimilar },
+          isPublic: true
+        }).select('name image content cost provinces locations');
+
+        res.success({
+          success: true,
+          tours
+        });
+      }
+      res.notFound('Không tìm thấy tour tương tự');
+    } catch (err) {}
   }
 }
 

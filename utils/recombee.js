@@ -77,7 +77,7 @@ function unBookmark(userId, itemId) {
     .catch(err => console.log('ubook fail'));
 }
 
-async function getRecomment(userId, count, type) {
+async function getRecommend(userId, count, type) {
   let i = new rqs.RecommendItemsToUser(userId, count, {
     filter: 'type' == type,
     cascadeCreate: true,
@@ -88,7 +88,18 @@ async function getRecomment(userId, count, type) {
   return res;
 }
 
-async function getUserRecomment(userId, count) {
+async function getSimilarItem(itemId, count, type) {
+  let i = new rqs.RecommendItemsToItem(itemId, count, {
+    filter: 'type' == type,
+    cascadeCreate: true,
+    minRelevance: 'low'
+  });
+  i.timeout = 10000;
+  const res = await recombeeClient.send(i);
+  return res;
+}
+
+async function getUserRecommend(userId, count) {
   let i = new rqs.RecommendUsersToUser(userId, count, {
     cascadeCreate: true,
     minRelevance: 'low'
@@ -183,32 +194,37 @@ function reviewItem(userId, itemId, rate) {
 }
 
 async function getPostRecommend(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'post');
+  const res = await getRecommend(userId, count, 'post');
   return res;
 }
 
 async function getTourRecommend(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'tour');
+  const res = await getRecommend(userId, count, 'tour');
   return res;
 }
 
 async function getLocationRecommend(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'location');
+  const res = await getRecommend(userId, count, 'location');
   return res;
 }
 
 async function getVolunteerRecommend(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'volunteer');
+  const res = await getRecommend(userId, count, 'volunteer');
   return res;
 }
 
 async function getServiceRecommend(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'service');
+  const res = await getRecommend(userId, count, 'service');
   return res;
 }
 
 async function getFollowRecommend(userId, count = 10) {
-  const res = await getUserRecomment(userId, count);
+  const res = await getUserRecommend(userId, count);
+  return res;
+}
+
+async function getSimilarTour(tourId, count = 3) {
+  const res = await getSimilarItem(tourId, count, 'tour');
   return res;
 }
 
@@ -233,5 +249,6 @@ module.exports = {
   getLocationRecommend,
   getVolunteerRecommend,
   getServiceRecommend,
-  getFollowRecommend
+  getFollowRecommend,
+  getSimilarTour
 };

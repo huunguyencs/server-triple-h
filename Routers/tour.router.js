@@ -10,6 +10,7 @@ router.get('/tours', TourController.getTours);
 router.get('/search', TourController.search);
 router.get('/hot', TourController.tourHot);
 router.get('/foryou', auth, TourController.getTourRecommend);
+router.get('/similar/:id', TourController.getSimilar);
 
 router.get('/user/:id', TourController.getUserTour);
 
