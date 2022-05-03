@@ -415,7 +415,7 @@ class PostController {
       //   );
       // }
 
-      console.log(postId);
+      // console.log(postId);
       let postRecommendId = await getPostRecomment(req.user._id, 20);
       // console.log('RECOMMEND:', postRecommendId);
       if (postRecommendId) {
