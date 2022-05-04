@@ -46,7 +46,9 @@ class MessageController {
     // }
     async accessConversation(req, res) {
         try {
-            const { userId } = req.body;
+            // console.log("userId", req.body.userId )
+            // console.log("userName", req.body.userName)
+            const { userId, userName } = req.body;
             const isConversation = await Conversations.find({
                 isGroup: false,
                 $or: [
@@ -62,7 +64,7 @@ class MessageController {
                   select: 'username fullname avatar'
                 }
             })
-
+            // console.log("isConversation", isConversation)
             if (isConversation.length > 0) {
                 res.success({
                     success: true,
@@ -71,7 +73,7 @@ class MessageController {
                 })
             }else{
                 const newConversation = new Conversations({
-                    name: " ",
+                    name: userName,
                     isGroup: false,
                     members: [req.user._id, userId],
                 })
