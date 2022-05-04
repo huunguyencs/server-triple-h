@@ -15,6 +15,11 @@ const helpSchema = new mongoose.Schema(
   }
 );
 
-helpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 24 * 60 * 60 * 2 });
+helpSchema.index({ position: '2dsphere' }, { name: '2D Sphere Help' });
+helpSchema.index({ position: '2d' }, { name: '2D Help' });
+helpSchema.index(
+  { createdAt: 1 },
+  { name: 'Expire Help', expireAfterSeconds: 24 * 60 * 60 * 2 }
+);
 
 module.exports = mongoose.model('helps', helpSchema);

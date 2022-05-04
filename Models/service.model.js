@@ -47,10 +47,11 @@ const serviceSchema = new mongoose.Schema(
     ],
     cost: String,
     andress: String,
-    position: {
-      lat: Number,
-      lng: Number
-    },
+    // position: {
+    //   lat: Number,
+    //   lng: Number
+    // },
+    position: [{ type: Number }], // lng, lat
     images: [{ type: String }],
     discount: [{ type: String }]
   },
@@ -58,6 +59,9 @@ const serviceSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+serviceSchema.index({ position: '2dsphere' }, { name: '2D sphere Service' });
+serviceSchema.index({ position: '2d' }, { name: '2D Service' });
 
 serviceSchema.index(
   {

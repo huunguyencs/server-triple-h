@@ -331,6 +331,60 @@ class ServiceController {
       res.error(err);
     }
   }
+
+  async getTopServiceNear(req, res) {
+    try {
+      const { lat, lng } = req.query;
+      if (!lat || !lng || lat === 'undefined' || lng === 'undefined')
+        return res.error('Thiếu dữ liệu');
+
+      const services = await Services.aggregate([
+        {
+          $match: {
+            position: {
+              $near: {
+                $geometry: {
+                  type: 'Point',
+                  coordinates: [lng, lat]
+                },
+                $maxDistance: 10 * 1000
+              }
+            }
+          }
+        },
+        {
+          $addFields: {
+            rateScore: {
+              $avg: [
+                { $multiply: [{ $arrayElemAt: ['$star', 0] }, 1] },
+                { $multiply: [{ $arrayElemAt: ['$star', 1] }, 2] },
+                { $multiply: [{ $arrayElemAt: ['$star', 2] }, 3] },
+                { $multiply: [{ $arrayElemAt: ['$star', 3] }, 4] },
+                { $multiply: [{ $arrayElemAt: ['$star', 4] }, 5] }
+              ]
+            }
+          }
+        },
+        {
+          $sort: {
+            rateScore: -1
+          }
+        },
+        {
+          $limit: 5
+        }
+      ]);
+
+      if (!services) return res.notFound('Không tìm thấy service');
+
+      res.success({
+        success: true,
+        services
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new ServiceController();
