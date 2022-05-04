@@ -44,6 +44,42 @@ class MessageController {
     //         res.error(err);
     //     }
     // }
+    // get detail conversation
+    async getConversation(req, res){
+        try {
+            if (!ObjectId.isValid(req.params.id)) {
+                res.notFound('Không tìm thấy Cuộc trò chuyện');
+                return;
+            }
+            // console.log(req.params.id)
+            let conversation = await Conversations.findById(req.params.id);
+
+            if (!conversation) {
+                res.notFound('Không tìm thấy cuộc trò chuyện')
+                return;
+            }
+
+            conversation = await Conversations.findById(req.params.id)
+            .populate('members', 'avatar username fullname role')
+            .populate({
+                path: 'latestMessage',
+                populate: {
+                  path: 'sender',
+                  select: 'username fullname avatar'
+                }
+            })
+            .populate('groupAdmin', 'avatar username fullname')
+
+
+            res.success({
+                success: true, message: "Lấy thông tin 1 cuộc trò chuyện thành công", conversation 
+            });
+            
+        } catch (err) {
+            console.log(err)
+            res.error(err);
+        }
+    }
     async accessConversation(req, res) {
         try {
             // console.log("userId", req.body.userId )

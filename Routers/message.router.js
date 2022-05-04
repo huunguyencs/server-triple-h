@@ -14,4 +14,5 @@ router.post('/create_group', auth, MessageController.createConversationGroup);
 router.patch('/rename', auth, MessageController.renameConversation);
 router.patch('/group_add', auth, MessageController.conversationGroupAdd);
 
+router.get('/:id', auth, MessageController.getConversation);
 module.exports = router;
