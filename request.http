@@ -266,6 +266,20 @@
 # Patch  http://localhost:5000/report/624e45674fa149df992d8cc5
 # Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY0OTI5Njk1MiwiZXhwIjoxNjQ5MzgzMzUyfQ.kq72-7hxseNEJBelJ6m3y_Mq-W3MPo-ixAHmCbjjT5s
 
+
+
+# POST http://localhost:5000/help
+# Content-Type: application/json
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY1MDA5MzM4NywiZXhwIjoxNjUwMTc5Nzg3fQ.AAYnJ3oqUyn6Pu7ouggwX8hUqhwweUr3Tx4bVug25Is
+
+# {
+#     "description": "test",
+#     "position": [108, 17],
+#     "type": "hi",
+#     "positionStr": "Tp Ho Chi Minh",
+#     "expireAt": "Apr 17 2022 14:08:24"
+# }
+
 # POST http://localhost:5000/user/login
 # Content-Type: application/json
 
@@ -273,15 +287,11 @@
 #     "email":"admin@gmail.com",
 #     "password": "Admin123456"
 # }
-
-POST http://localhost:5000/help
+POST http://localhost:5000/message/create_message_group
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY1MDA5MzM4NywiZXhwIjoxNjUwMTc5Nzg3fQ.AAYnJ3oqUyn6Pu7ouggwX8hUqhwweUr3Tx4bVug25Is
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyM2M5NjYxMDI5ODFmNzZiZTY3NWEwZCIsImlhdCI6MTY1MTU0MzkyMSwiZXhwIjoxNjUxNjMwMzIxfQ.VLuy-nSBbvcdhp5uTe8cyfigff6Jd7WiRpHiwPBbplM
 
 {
-    "description": "test",
-    "position": [108, 17],
-    "type": "hi",
-    "positionStr": "Tp Ho Chi Minh",
-    "expireAt": "Apr 17 2022 14:08:24"
+    "text": "abc",
+    "conversationId":"627096b3d09e3ff443fca2b9"
 }
