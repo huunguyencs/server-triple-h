@@ -18,4 +18,4 @@ const eventContributeSchema = new mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('event_contribute', eventContributeSchema)
+module.exports = mongoose.model('event_contributes', eventContributeSchema)
