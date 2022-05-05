@@ -8,6 +8,7 @@ router.post('/create', auth, TourController.createTour);
 router.post('/share', auth, TourController.shareTour);
 router.get('/tours', TourController.getTours);
 router.get('/search', TourController.search);
+router.get('/search_hot', TourController.searchTourHot);
 router.get('/hot', TourController.tourHot);
 router.get('/foryou', auth, TourController.getTourRecommend);
 router.get('/similar/:id', TourController.getSimilar);

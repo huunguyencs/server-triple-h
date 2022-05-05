@@ -8,7 +8,8 @@ const helpSchema = new mongoose.Schema(
     type: String,
     contact: String,
     positionStr: String,
-    state: [{ type: mongoose.Types.ObjectId, ref: 'users' }]
+    state: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
+    images: [{ type: String }]
   },
   {
     timestamps: true

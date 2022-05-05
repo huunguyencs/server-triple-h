@@ -380,14 +380,14 @@ class TourController {
       var sort = '-createdAt';
       var score = {};
 
-      if (maxCost && maxCost !== 1000) {
+      if (maxCost && maxCost < 1000) {
         query = {
           cost: {
             $lte: maxCost
           }
         };
       }
-      if (minCost && minCost !== 0) {
+      if (minCost && minCost > 0) {
         query = {
           ...query,
           cost: {
@@ -396,7 +396,7 @@ class TourController {
           }
         };
       }
-      if (q && q !== '') {
+      if (q) {
         query = {
           ...query,
           $text: {
@@ -1020,6 +1020,121 @@ class TourController {
       }
       res.notFound('Không tìm thấy tour tương tự');
     } catch (err) {}
+  }
+
+  async searchTourHot(req, res) {
+    try {
+      let { q, max, min } = req.query;
+      max = max ? parseInt(max) : null;
+      min = min ? parseInt(min) : null;
+      var query = {};
+      var sort = '-createdAt';
+      var score = {};
+
+      if (max && max < 1000) {
+        query = {
+          cost: {
+            $lte: max
+          }
+        };
+      }
+      if (min && min > 0) {
+        query = {
+          ...query,
+          cost: {
+            ...query.cost,
+            $gte: min
+          }
+        };
+      }
+      if (q) {
+        query = {
+          ...query,
+          $text: {
+            $search: q
+          }
+        };
+        sort = { score: { $meta: 'textScore' } };
+        score = sort;
+      }
+      query = {
+        ...query,
+        isPublic: true
+      };
+
+      let tours = await Tours.find(query, score)
+        .sort(sort)
+        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('tour', 'date')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'tour',
+            select: 'date'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'joinIds',
+            select: 'username fullname avatar'
+          }
+        });
+
+      const THIRTY_DAY_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      let hot = await ToursRate.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: THIRTY_DAY_AGO
+            }
+          }
+        },
+        {
+          $addFields: {
+            trendScore: {
+              $divide: [
+                { $multiply: ['$score', 1000] },
+                { $subtract: [new Date(), '$createdAt'] }
+              ]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$tour_id',
+            totalScore: {
+              $sum: '$trendScore'
+            }
+          }
+        },
+        {
+          $limit: 30
+        }
+      ]);
+      console.log(tours);
+
+      hot = hot.map(item => item._id.toString());
+      console.log(hot);
+
+      tours = tours.filter(item => hot.includes(item._id.toString()));
+
+      res.success({
+        success: true,
+        tours
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
   }
 }
 
