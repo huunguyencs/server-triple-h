@@ -3,48 +3,39 @@ const Conversations = require('../Models/conversation.model');
 
 const ObjectId = require('mongoose').Types.ObjectId;
 class MessageController {
-    //create message or create conversation One to One
-    // async createMessage(req, res) {
-    //     try {
-    //         const { sender, recipient, text} = req.body;
-    //         if (!recipient || !text.trim()) return;
+    async seenMessage(req, res){
+        try {
+            if (!ObjectId.isValid(req.body.id)) {
+                res.notFound('Không tìm thấy Cuộc trò chuyện');
+                return;
+            }
+            const conversation = await Conversations.findById(req.body.id);
 
-    //         const newConversation = await Conversations.findOneAndUpdate({
-    //             isGroup: false,
-    //             $or: [
-    //                 { members: [sender, recipient] },
-    //                 { members: [recipient, sender] }
-    //             ]
-    //         }, {
-    //             members: [sender, recipient]
-    //         }, { new: true, upsert: true })
-
-    //         const newMessage = new Messages({
-    //             conversation: newConversation._id,
-    //             sender,
-    //             text
-    //         })
-
-    //         await newMessage.save()
-
-    //         await Conversations.findOneAndUpdate({
-    //             _id: newConversation._id
-    //         }, {
-    //             latestMessage: newMessage._id
-    //         })
-
-    //         res.created({
-    //             success: true,
-    //             message: "Create message successful",
-    //             newMessage: {
-    //                 ...newMessage._doc,
-    //             }
-    //         })
-    //     } catch (err) {
-    //         res.error(err);
-    //     }
-    // }
-    // get detail conversation
+            if (!conversation) {
+                res.notFound('Không tìm thấy cuộc trò chuyện')
+                return;
+            }
+            await Messages.findOneAndUpdate(
+                {
+                  _id: conversation.latestMessage,
+                  seen: { $elemMatch: { member: req.user._id } },
+                },
+                {
+                  $set: {
+                    'seen.$.isSeen': true,
+                  },
+                },
+                { new: true }
+              );
+            res.success({
+                success: true, message: "Đọc tin nhắn"
+            });
+            
+        } catch (err) {
+            console.log(err)
+            res.error(err);
+        }
+    }
     async getConversation(req, res){
         try {
             if (!ObjectId.isValid(req.params.id)) {
@@ -130,15 +121,22 @@ class MessageController {
     //to Group
     async createMessage(req, res) {
         try {
-            const { text, conversationId } = req.body;
+            const { text, conversationId, members } = req.body;
             if (!text || !conversationId) {
                 return res.sendStatus(400);
             }
-            
+
+            const seen = members.map(item => item == req.user._id ? {
+                member: item,
+                isSeen: true
+            }: {member: item, isSeen: false});
+            // console.log("seen", seen)
+
             const newMessage = new Messages({
                 conversation: conversationId,
                 sender: req.user._id,
-                text
+                text,
+                seen: seen
             })
 
             await newMessage.save()
@@ -229,7 +227,7 @@ class MessageController {
     async createConversationGroup(req, res) {
         try {
             var members = req.body.members
-            console.log("members",members)
+            // console.log("members",members)
             if (!req.body.members || !req.body.name) {
                 return res.status(400).send({ message: "Điền đầy đủ các trường!" });
             }
@@ -240,7 +238,7 @@ class MessageController {
             }
 
             members.push(req.user._id)
-            console.log("members",members)
+            // console.log("members",members)
             const group = await Conversations.create({
                 name: req.body.name,
                 members: members,
