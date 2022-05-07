@@ -3,14 +3,13 @@ let rqs = recombee.requests;
 
 const recombeeClient = new recombee.ApiClient(
   process.env.RECOMBEE_DB,
-  process.env.RECOMBEE_TOKEN,
-  { region: 'ap-se' }
+  process.env.RECOMBEE_TOKEN
 );
 
 function rating(userId, itemId, rating) {
   let i = new rqs.AddRating(userId, itemId, rating, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('rating success'))
     .catch(err => console.log('rating fail'));
@@ -19,7 +18,7 @@ function rating(userId, itemId, rating) {
 function cartAdd(userId, itemId) {
   let i = new rqs.AddCartAddition(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('cart add success'))
     .catch(err => console.log('cart add fail'));
@@ -28,15 +27,17 @@ function cartAdd(userId, itemId) {
 function cartRemove(userId, itemId) {
   let i = new rqs.DeleteCartAddition(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('cart remove success'))
     .catch(err => console.log('cart remove fail'));
 }
 
 function viewDetail(userId, itemId) {
-  recombeeClient
-    .send(new rqs.AddDetailView(userId, itemId, { cascadeCreate: true }))
+  let i = new rqs.AddDetailView(userId, itemId, { cascadeCreate: true });
+  i.timeout = 10000;
+  return recombeeClient
+    .send(i)
     .then(res => console.log('view detail success'))
     .catch(err => console.log('view detail fail'));
 }
@@ -44,7 +45,7 @@ function viewDetail(userId, itemId) {
 function purchasesItem(userId, itemId) {
   let i = new rqs.AddPurchase(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('purchases success'))
     .catch(err => console.log('purchases fail'));
@@ -53,7 +54,7 @@ function purchasesItem(userId, itemId) {
 function removePurchases(userId, itemId) {
   let i = new rqs.DeletePurchase(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('rm pur success'))
     .catch(err => console.log('rm pur fail'));
@@ -62,7 +63,7 @@ function removePurchases(userId, itemId) {
 function bookmark(userId, itemId) {
   let i = new rqs.AddBookmark(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('bookmark success'))
     .catch(err => console.log('bookmark fail'));
@@ -71,7 +72,7 @@ function bookmark(userId, itemId) {
 function unBookmark(userId, itemId) {
   let i = new rqs.DeleteBookmark(userId, itemId, { cascadeCreate: true });
   i.timeout = 10000;
-  recombeeClient
+  return recombeeClient
     .send(i)
     .then(res => console.log('ubookmark success'))
     .catch(err => console.log('ubook fail'));
@@ -84,8 +85,7 @@ async function getRecommend(userId, count, type) {
     minRelevance: 'low'
   });
   i.timeout = 10000;
-  const res = await recombeeClient.send(i);
-  return res;
+  return await recombeeClient.send(i);
 }
 
 async function getSimilarItem(itemId, count, type) {
@@ -95,8 +95,7 @@ async function getSimilarItem(itemId, count, type) {
     minRelevance: 'low'
   });
   i.timeout = 10000;
-  const res = await recombeeClient.send(i);
-  return res;
+  return await recombeeClient.send(i);
 }
 
 async function getUserRecommend(userId, count) {
@@ -105,8 +104,7 @@ async function getUserRecommend(userId, count) {
     minRelevance: 'low'
   });
   i.timeout = 10000;
-  const res = await recombeeClient.send(i);
-  return res;
+  return await recombeeClient.send(i);
 }
 
 function createItem(id, type, categories, description) {
@@ -116,7 +114,7 @@ function createItem(id, type, categories, description) {
   if (categories) value.categories = categories;
   if (description) value.description = description;
   item.push(new rqs.SetItemValues(id, value));
-  recombeeClient
+  return recombeeClient
     .send(new rqs.Batch(item))
     .then(res => {
       console.log(`Create ${type} ${id} successful`);
@@ -132,7 +130,7 @@ function updatePropsItem(id, type, categories, description) {
   if (categories) value.categories = categories;
   if (description) value.description = description;
   const task = new rqs.SetItemValues(id, value);
-  recombeeClient
+  return recombeeClient
     .send(task)
     .then(() => {
       console.log('Set item value successful');
@@ -143,12 +141,12 @@ function updatePropsItem(id, type, categories, description) {
 }
 
 function deleteItem(id) {
-  recombeeClient.send(rqs.DeleteItem(id));
+  return recombeeClient.send(rqs.DeleteItem(id));
 }
 
 function createUser(id) {
   const item = new rqs.AddUser(id);
-  recombeeClient
+  return recombeeClient
     .send(item)
     .then(res => {
       console.log(`Create ${id} successful`);
@@ -160,7 +158,7 @@ function createUser(id) {
 
 function setPrefUser(id, pref) {
   const task = new rqs.SetUserValues(id, { pref: new Set(pref) });
-  recombeeClient
+  return recombeeClient
     .send(task)
     .then(() => {
       console.log('set pref user successful');
@@ -171,86 +169,79 @@ function setPrefUser(id, pref) {
 }
 
 function likeItem(userId, itemId) {
-  cartAdd(userId, itemId);
+  return cartAdd(userId, itemId);
 }
 
 function unLikeItem(userId, itemId) {
-  cartRemove(userId, itemId);
+  return cartRemove(userId, itemId);
 }
 
 function commentItem(userId, itemId) {
-  cartAdd(userId, itemId);
+  return cartAdd(userId, itemId);
 }
 
 function shareItem(userId, itemId) {
-  bookmark(userId, itemId);
+  return bookmark(userId, itemId);
 }
 
 function viewDetailItem(userId, itemId) {
-  viewDetail(userId, itemId);
+  return viewDetail(userId, itemId);
 }
 
 function joinItem(userId, itemId) {
-  purchasesItem(userId, itemId);
+  return purchasesItem(userId, itemId);
 }
 
 function unJoinItem(userId, itemId) {
-  removePurchases(userId, itemId);
+  return removePurchases(userId, itemId);
 }
 
 function visitLocation(userId, itemId) {
-  purchasesItem(userId, itemId);
+  return purchasesItem(userId, itemId);
 }
 
 function useService(userId, itemId) {
-  purchasesItem(userId, itemId);
+  return purchasesItem(userId, itemId);
 }
 
 function saveItem(userId, itemId) {
-  bookmark(userId, itemId);
+  return bookmark(userId, itemId);
 }
 
 function unSaveItem(userId, itemId) {
-  unBookmark(userId, itemId);
+  return unBookmark(userId, itemId);
 }
 
 function reviewItem(userId, itemId, rate) {
-  rating(userId, itemId, rate);
+  return rating(userId, itemId, rate);
 }
 
 async function getPostRecommend(userId, count = 10) {
-  const res = await getRecommend(userId, count, 'post');
-  return res;
+  return await getRecommend(userId, count, 'post');
 }
 
 async function getTourRecommend(userId, count = 10) {
-  const res = await getRecommend(userId, count, 'tour');
-  return res;
+  return await getRecommend(userId, count, 'tour');
 }
 
 async function getLocationRecommend(userId, count = 10) {
-  const res = await getRecommend(userId, count, 'location');
-  return res;
+  return await getRecommend(userId, count, 'location');
 }
 
 async function getVolunteerRecommend(userId, count = 10) {
-  const res = await getRecommend(userId, count, 'volunteer');
-  return res;
+  return await getRecommend(userId, count, 'volunteer');
 }
 
 async function getServiceRecommend(userId, count = 10) {
-  const res = await getRecommend(userId, count, 'service');
-  return res;
+  return await getRecommend(userId, count, 'service');
 }
 
 async function getFollowRecommend(userId, count = 10) {
-  const res = await getUserRecommend(userId, count);
-  return res;
+  return await getUserRecommend(userId, count);
 }
 
 async function getSimilarTour(tourId, count = 3) {
-  const res = await getSimilarItem(tourId, count, 'tour');
-  return res;
+  return await getSimilarItem(tourId, count, 'tour');
 }
 
 module.exports = {

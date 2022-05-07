@@ -720,7 +720,9 @@ class UserController {
         await Users.findOneAndUpdate({ _id: id }, { role });
       }
       res.success({ success: true, message: 'Cập nhật thành công!' });
-    } catch (err) {}
+    } catch (err) {
+      res.error(err);
+    }
   }
 
   async getUserByArray(req, res) {

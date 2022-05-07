@@ -1019,7 +1019,9 @@ class TourController {
         });
       }
       res.notFound('Không tìm thấy tour tương tự');
-    } catch (err) {}
+    } catch (err) {
+      res.error(err);
+    }
   }
 
   async searchTourHot(req, res) {
