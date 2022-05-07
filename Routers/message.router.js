@@ -13,6 +13,6 @@ router.patch('/seen_message', auth, MessageController.seenMessage);
 router.post('/create_group', auth, MessageController.createConversationGroup);
 router.patch('/rename', auth, MessageController.renameConversation);
 router.patch('/group_add', auth, MessageController.conversationGroupAdd);
-
+router.patch('/group_move', auth, MessageController.conversationGroupRemove)
 router.get('/:id', auth, MessageController.getConversation);
 module.exports = router;

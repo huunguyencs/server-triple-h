@@ -5,9 +5,9 @@ let users = [];
 const SocketServer = socket => {
   //connect
   socket.on('joinUser', data => {
-    console.log('SOCKET POSITION:', data.position);
+    // console.log('SOCKET POSITION:', data.position);
     if (!data.position) {
-      console.log('SOCKET CONNECT:', socket.handshake.headers);
+      // console.log('SOCKET CONNECT:', socket.handshake.headers);
       if (data.ipv4) {
         data.position = ip2position(data.ipv4);
       } else {

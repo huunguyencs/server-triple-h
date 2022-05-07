@@ -118,7 +118,7 @@ class MessageController {
             res.error(err);
         }
     }
-    //to Group
+    
     async createMessage(req, res) {
         try {
             const { text, conversationId, members } = req.body;
@@ -139,49 +139,22 @@ class MessageController {
                 seen: seen
             })
 
-        await newConversation.save();
-        const fullConversation = await Conversations.findOne({
-          _id: newConversation._id
-        }).populate('members', 'avatar username fullname role');
-        res.success({
-          success: true,
-          message: 'Get successful',
-          conversation: fullConversation
-        });
-      }
-      catch (err) {
-        res.error(err);
-      }
-  }
-  //to Group
-  async createMessage(req, res) {
-    try {
-      const { text, conversationId } = req.body;
-      if (!text || !conversationId) {
-        return res.sendStatus(400);
-      }
+            await newMessage.save();
+            await Conversations.findByIdAndUpdate(conversationId, {
+              latestMessage: newMessage._id
+            });
 
-      const newMessage = new Messages({
-        conversation: conversationId,
-        sender: req.user._id,
-        text
-      });
-
-      await newMessage.save();
-      await Conversations.findByIdAndUpdate(conversationId, {
-        latestMessage: newMessage._id
-      });
-
-      res.created({
-        success: true,
-        message: 'Create messageGroup successful',
-        newMessage: {
-          ...newMessage._doc
+            res.created({
+              success: true,
+              message: 'Create messageGroup successful',
+              newMessage: {
+                ...newMessage._doc
+              }
+            });
+          }
+        catch (err) {
+          res.error(err);
         }
-      });
-    } catch (err) {
-      res.error(err);
-    }
   }
 
   //get conversations of 1 user
