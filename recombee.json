@@ -1,57 +1,37 @@
 {
-    "item_properties": {
-        "type": [
-            "post",
-            "tour",
-            "location",
-            "volunteer",
-            "service"
-        ],
-        "cats": [
-            "hashtags",
-            "bien",
-            "nui",
-            "giao duc",
-            "lich su",
-            "le hoi",
-            "trai he"
-        ],
-        "description": ""
-    },
-    "user_properties": {
-        "pref": [
-            ""
-        ]
-    },
-    "interaction": {
-        "post": [
-            "like - cart_add",
-            "comment - cart_add",
-            "share - bookmark",
-            "view_detail"
-        ],
-        "tour": [
-            "join - purchases",
-            "like - cart_add",
-            "comment - cart_add",
-            "share - bookmark",
-            "view_detail",
-            "save - bookmark"
-        ],
-        "location": [
-            "review - rating",
-            "visit - purchases",
-            "view_detail"
-        ],
-        "volunteer": [
-            "join - purchases",
-            "view_detail",
-            "comment - cart_add"
-        ],
-        "service": [
-            "use - purchases",
-            "review - rating",
-            "view_detail"
-        ]
-    }
+  "item_properties": {
+    "type": ["post", "tour", "location", "volunteer", "service"],
+    "categories": [
+      "hashtags",
+      "bien",
+      "nui",
+      "giao duc",
+      "lich su",
+      "le hoi",
+      "trai he"
+    ],
+    "description": ""
+  },
+  "user_properties": {
+    "pref": [""]
+  },
+  "interaction": {
+    "post": [
+      "like - cart_add",
+      "comment - cart_add",
+      "share - bookmark",
+      "view_detail"
+    ],
+    "tour": [
+      "join - purchases",
+      "like - cart_add",
+      "comment - cart_add",
+      "share - bookmark",
+      "view_detail",
+      "save - bookmark"
+    ],
+    "location": ["review - rating", "visit - purchases", "view_detail"],
+    "volunteer": ["join - purchases", "view_detail", "comment - cart_add"],
+    "service": ["use - purchases", "review - rating", "view_detail"]
+  }
 }

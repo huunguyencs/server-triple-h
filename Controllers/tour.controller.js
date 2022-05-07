@@ -1,6 +1,7 @@
 const Tours = require('../Models/tour.model');
 const TourDates = require('../Models/tourDate.model');
 const Comments = require('../Models/comment.model');
+const ToursRate = require('../Models/tourRate.model');
 const {
   createItem,
   shareItem,
@@ -9,7 +10,10 @@ const {
   deleteItem,
   joinItem,
   unJoinItem,
-  viewDetailItem
+  viewDetailItem,
+  getTourRecommend,
+  getSimilarTour,
+  updatePropsItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -129,6 +133,15 @@ class TourController {
         }
       });
 
+      if (share.isPublic) {
+        const tourRate = new ToursRate({
+          tour_id: shareId,
+          user_id: req.user._id,
+          score: 3
+        });
+        await tourRate.save();
+      }
+
       shareItem(req.user._id, shareId);
     } catch (err) {
       console.log(err);
@@ -240,6 +253,13 @@ class TourController {
           message: 'update tour successful',
           newTour
         });
+
+        updatePropsItem(
+          req.params.id,
+          'tour',
+          [...hashtags, ...provinces, ...locations],
+          content
+        );
       } else {
         res.notFound('Không tìm thấy tour');
       }
@@ -253,8 +273,7 @@ class TourController {
   async likeTour(req, res) {
     try {
       if (!ObjectId.isValid(req.params.id)) {
-        res.notFound('Không tìm thấy tour');
-        return;
+        return res.notFound('Không tìm thấy tour');
       }
       // var tour = await Tours.findOne({ _id: req.params.id, likes: req.user._id });
       // if (tour) {
@@ -277,6 +296,16 @@ class TourController {
         likes: tour.likes,
         tour
       });
+
+      if (!tour.shareId && tour.isPublic) {
+        const tourRate = new ToursRate({
+          tour_id: req.params.id,
+          user_id: req.user._id,
+          score: 2
+        });
+
+        await tourRate.save();
+      }
 
       likeItem(req.user._id, req.params.id);
     } catch (err) {
@@ -351,14 +380,14 @@ class TourController {
       var sort = '-createdAt';
       var score = {};
 
-      if (maxCost && maxCost !== 1000) {
+      if (maxCost && maxCost < 1000) {
         query = {
           cost: {
             $lte: maxCost
           }
         };
       }
-      if (minCost && minCost !== 0) {
+      if (minCost && minCost > 0) {
         query = {
           ...query,
           cost: {
@@ -367,7 +396,7 @@ class TourController {
           }
         };
       }
-      if (q && q !== '') {
+      if (q) {
         query = {
           ...query,
           $text: {
@@ -391,13 +420,13 @@ class TourController {
         .limit(5)
         .populate('userId joinIds likes', 'username fullname avatar')
         .populate('tour', 'date')
-        .populate({
-          path: 'comments',
-          populate: {
-            path: 'userId likes',
-            select: 'username fullname avatar'
-          }
-        })
+        // .populate({
+        //   path: 'comments',
+        //   populate: {
+        //     path: 'userId likes',
+        //     select: 'username fullname avatar'
+        //   }
+        // })
         .populate({
           path: 'shareId',
           populate: {
@@ -600,6 +629,16 @@ class TourController {
         joinIds: tour.joinIds
       });
 
+      if (tour.isPublic) {
+        const tourRate = new ToursRate({
+          tour_id: req.params.id,
+          user_id: req.user._id,
+          score: 2
+        });
+
+        await tourRate.save();
+      }
+
       joinItem(req.user._id, req.params.id);
     } catch (err) {
       res.error(err);
@@ -704,7 +743,7 @@ class TourController {
         return;
       }
       const { locationId } = req.body;
-      await TourDates.findOneAndUpdate(
+      const tour = await TourDates.findOneAndUpdate(
         { _id: id, locations: { $elemMatch: { _id: locationId } } },
         {
           $addToSet: {
@@ -712,6 +751,17 @@ class TourController {
           }
         }
       );
+
+      if (tour.isPublic) {
+        const tourRate = new ToursRate({
+          tour_id: id,
+          user_id: req.user._id,
+          type: 4
+        });
+
+        await tourRate.save();
+      }
+
       res.success({
         success: true,
         message: 'Tham gia thành công'
@@ -793,6 +843,296 @@ class TourController {
       }));
       res.success({ success: true, results: tours, query: q });
     } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async tourHot(req, res) {
+    try {
+      const THIRTY_DAY_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const hot = await ToursRate.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: THIRTY_DAY_AGO
+            }
+          }
+        },
+        {
+          $addFields: {
+            trendScore: {
+              $divide: [
+                { $multiply: ['$score', 1000] },
+                { $subtract: [new Date(), '$createdAt'] }
+              ]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$tour_id',
+            totalScore: {
+              $sum: '$trendScore'
+            }
+          }
+        },
+        {
+          $lookup: {
+            from: 'tours',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'tour'
+          }
+        },
+        {
+          $unwind: '$tour'
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'tour.userId',
+            foreignField: '_id',
+            as: 'tour.userId',
+            pipeline: [
+              {
+                $project: { fullname: 1, avatar: 1 }
+              }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'tour.joinIds',
+            foreignField: '_id',
+            as: 'tour.joinIds',
+            pipeline: [
+              {
+                $project: { fullname: 1, avatar: 1 }
+              }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'tour.likes',
+            foreignField: '_id',
+            as: 'tour.likes',
+            pipeline: [
+              {
+                $project: { fullname: 1, avatar: 1 }
+              }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: 'tour_dates',
+            localField: 'tour.tour',
+            foreignField: '_id',
+            as: 'tour.tour',
+            pipeline: [
+              {
+                $project: { date: 1 }
+              }
+            ]
+          }
+        },
+        {
+          $sort: {
+            totalScore: -1
+          }
+        },
+        {
+          $limit: 10
+        }
+      ]);
+
+      res.success({
+        success: true,
+        hot
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getTourRecommend(req, res) {
+    try {
+      let tourRecommendId = await getTourRecommend(req.user._id, 10);
+      if (tourRecommendId) {
+        tourRecommendId = tourRecommendId.recomms.map(item => item.id);
+        const tours = await Tours.find({
+          _id: {
+            $in: tourRecommendId
+          }
+        })
+          .populate('userId joinIds likes', 'username fullname avatar')
+          .populate('tour', 'date')
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'userId',
+              select: 'username fullname avatar'
+            }
+          })
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'tour',
+              select: 'date'
+            }
+          })
+          .populate({
+            path: 'shareId',
+            populate: {
+              path: 'joinIds',
+              select: 'username fullname avatar'
+            }
+          });
+        return res.success({
+          success: true,
+          tours
+        });
+      }
+      res.notFound('Không tìm thấy tour gợi ý');
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getSimilar(req, res) {
+    try {
+      let tourSimilar = await getSimilarTour(req.params.id);
+      if (tourSimilar) {
+        tourSimilar = tourSimilar.recomms.map(item => item.id);
+        const tours = await Tours.find({
+          _id: { $in: tourSimilar },
+          isPublic: true
+        }).select('name image content cost provinces locations');
+
+        res.success({
+          success: true,
+          tours
+        });
+      }
+      res.notFound('Không tìm thấy tour tương tự');
+    } catch (err) {}
+  }
+
+  async searchTourHot(req, res) {
+    try {
+      let { q, max, min } = req.query;
+      max = max ? parseInt(max) : null;
+      min = min ? parseInt(min) : null;
+      var query = {};
+      var sort = '-createdAt';
+      var score = {};
+
+      if (max && max < 1000) {
+        query = {
+          cost: {
+            $lte: max
+          }
+        };
+      }
+      if (min && min > 0) {
+        query = {
+          ...query,
+          cost: {
+            ...query.cost,
+            $gte: min
+          }
+        };
+      }
+      if (q) {
+        query = {
+          ...query,
+          $text: {
+            $search: q
+          }
+        };
+        sort = { score: { $meta: 'textScore' } };
+        score = sort;
+      }
+      query = {
+        ...query,
+        isPublic: true
+      };
+
+      let tours = await Tours.find(query, score)
+        .sort(sort)
+        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('tour', 'date')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'tour',
+            select: 'date'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'joinIds',
+            select: 'username fullname avatar'
+          }
+        });
+
+      const THIRTY_DAY_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      let hot = await ToursRate.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: THIRTY_DAY_AGO
+            }
+          }
+        },
+        {
+          $addFields: {
+            trendScore: {
+              $divide: [
+                { $multiply: ['$score', 1000] },
+                { $subtract: [new Date(), '$createdAt'] }
+              ]
+            }
+          }
+        },
+        {
+          $group: {
+            _id: '$tour_id',
+            totalScore: {
+              $sum: '$trendScore'
+            }
+          }
+        },
+        {
+          $limit: 30
+        }
+      ]);
+      console.log(tours);
+
+      hot = hot.map(item => item._id.toString());
+      console.log(hot);
+
+      tours = tours.filter(item => hot.includes(item._id.toString()));
+
+      res.success({
+        success: true,
+        tours
+      });
+    } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

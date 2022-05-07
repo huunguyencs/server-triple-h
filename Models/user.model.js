@@ -64,4 +64,26 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+userSchema.index(
+  {
+    fullname: 'text',
+    email: 'text',
+    email: 'text',
+    phone: 'text',
+    hobbies: 'text',
+    address: 'text'
+  },
+  {
+    name: 'User text index',
+    weights: {
+      fullname: 8,
+      username: 6,
+      email: 7,
+      phone: 7,
+      hobbies: 6,
+      address: 4
+    }
+  }
+);
+
 module.exports = mongoose.model('users', userSchema);

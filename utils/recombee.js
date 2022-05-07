@@ -3,7 +3,8 @@ let rqs = recombee.requests;
 
 const recombeeClient = new recombee.ApiClient(
   process.env.RECOMBEE_DB,
-  process.env.RECOMBEE_TOKEN
+  process.env.RECOMBEE_TOKEN,
+  { region: 'ap-se' }
 );
 
 function rating(userId, itemId, rating) {
@@ -76,7 +77,7 @@ function unBookmark(userId, itemId) {
     .catch(err => console.log('ubook fail'));
 }
 
-async function getRecomment(userId, count, type) {
+async function getRecommend(userId, count, type) {
   let i = new rqs.RecommendItemsToUser(userId, count, {
     filter: 'type' == type,
     cascadeCreate: true,
@@ -87,7 +88,18 @@ async function getRecomment(userId, count, type) {
   return res;
 }
 
-async function getUserRecomment(userId, count) {
+async function getSimilarItem(itemId, count, type) {
+  let i = new rqs.RecommendItemsToItem(itemId, count, {
+    filter: 'type' == type,
+    cascadeCreate: true,
+    minRelevance: 'low'
+  });
+  i.timeout = 10000;
+  const res = await recombeeClient.send(i);
+  return res;
+}
+
+async function getUserRecommend(userId, count) {
   let i = new rqs.RecommendUsersToUser(userId, count, {
     cascadeCreate: true,
     minRelevance: 'low'
@@ -115,21 +127,46 @@ function createItem(id, type, categories, description) {
     });
 }
 
+function updatePropsItem(id, type, categories, description) {
+  let value = { type: type };
+  if (categories) value.categories = categories;
+  if (description) value.description = description;
+  const task = new rqs.SetItemValues(id, value);
+  recombeeClient
+    .send(task)
+    .then(() => {
+      console.log('Set item value successful');
+    })
+    .catch(() => {
+      console.log('Set item value fail');
+    });
+}
+
 function deleteItem(id) {
   recombeeClient.send(rqs.DeleteItem(id));
 }
 
-function createUser(id, pref) {
-  let item = [];
-  item.push(new rqs.AddUser(id));
-  if (pref) item.push(new rqs.SetUserValues(id, { pref: new Set(pref) }));
+function createUser(id) {
+  const item = new rqs.AddUser(id);
   recombeeClient
-    .send(new rqs.Batch(item))
+    .send(item)
     .then(res => {
       console.log(`Create ${id} successful`);
     })
     .catch(err => {
       console.log(`Create ${id} fail`);
+    });
+}
+
+function setPrefUser(id, pref) {
+  const task = new rqs.SetUserValues(id, { pref: new Set(pref) });
+  recombeeClient
+    .send(task)
+    .then(() => {
+      console.log('set pref user successful');
+    })
+    .catch(() => {
+      console.log('set pref user fail');
     });
 }
 
@@ -181,33 +218,38 @@ function reviewItem(userId, itemId, rate) {
   rating(userId, itemId, rate);
 }
 
-async function getPostRecomment(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'post');
+async function getPostRecommend(userId, count = 10) {
+  const res = await getRecommend(userId, count, 'post');
   return res;
 }
 
-async function getTourRecomment(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'tour');
+async function getTourRecommend(userId, count = 10) {
+  const res = await getRecommend(userId, count, 'tour');
   return res;
 }
 
-async function getLocationRecomment(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'location');
+async function getLocationRecommend(userId, count = 10) {
+  const res = await getRecommend(userId, count, 'location');
   return res;
 }
 
-async function getVolunteerRecomment(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'volunteer');
+async function getVolunteerRecommend(userId, count = 10) {
+  const res = await getRecommend(userId, count, 'volunteer');
   return res;
 }
 
-async function getServiceRecomment(userId, count = 10) {
-  const res = await getRecomment(userId, count, 'service');
+async function getServiceRecommend(userId, count = 10) {
+  const res = await getRecommend(userId, count, 'service');
   return res;
 }
 
-async function getFollowRecomment(userId, count = 10) {
-  const res = await getUserRecomment(userId, count);
+async function getFollowRecommend(userId, count = 10) {
+  const res = await getUserRecommend(userId, count);
+  return res;
+}
+
+async function getSimilarTour(tourId, count = 3) {
+  const res = await getSimilarItem(tourId, count, 'tour');
   return res;
 }
 
@@ -227,10 +269,13 @@ module.exports = {
   saveItem,
   unSaveItem,
   reviewItem,
-  getPostRecomment,
-  getTourRecomment,
-  getLocationRecomment,
-  getVolunteerRecomment,
-  getServiceRecomment,
-  getFollowRecomment
+  getPostRecommend,
+  getTourRecommend,
+  getLocationRecommend,
+  getVolunteerRecommend,
+  getServiceRecommend,
+  getFollowRecommend,
+  getSimilarTour,
+  setPrefUser,
+  updatePropsItem
 };

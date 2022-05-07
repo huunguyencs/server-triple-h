@@ -24,4 +24,4 @@ const locationContributeSchema = new mongoose.Schema({
 })
 
 
-module.exports = mongoose.model('location_contribute', locationContributeSchema)
+module.exports = mongoose.model('location_contributes', locationContributeSchema)
