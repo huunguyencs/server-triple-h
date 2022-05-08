@@ -22,15 +22,15 @@ const provinceSchema = new mongoose.Schema(
       food: [{ type: String }]
     },
     image: { type: String },
-    position: {
-      lng: Number,
-      lat: Number
-    }
+    position: [Number]
   },
   {
     timestamps: true
   }
 );
+
+provinceSchema.index({ position: '2dsphere' }, { name: '2D Sphere Province' });
+provinceSchema.index({ position: '2d' }, { name: '2D Province' });
 
 provinceSchema.index(
   {
