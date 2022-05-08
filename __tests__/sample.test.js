@@ -4,6 +4,7 @@ const app = require('../index.js');
 let access_token = '';
 let admin_access_token = '';
 
+// User
 describe('User Endpoints', () => {
   // it('Register', async () => {
   //   const res = await request(app).post('/user/register').send({
@@ -181,6 +182,7 @@ describe('User Endpoints', () => {
   });
 });
 
+// Event
 describe('Event Endpoints', () => {
   it('Create Event', async () => {
     const res = await request(app)
@@ -276,6 +278,7 @@ describe('Event Endpoints', () => {
   });
 });
 
+// Help
 describe('Help Endpoints', () => {
   it('Get Help', async () => {
     const res = await request(app)
@@ -349,7 +352,9 @@ describe('Help Endpoints', () => {
   });
 });
 
+// Location
 describe('Location Endpoints', () => {
+  const _id = '';
   it('Create Location', async () => {
     const res = await request(app)
       .post('/location/create')
@@ -364,9 +369,109 @@ describe('Location Endpoints', () => {
       })
       .set('Authorization', `Bearer ${admin_access_token}`);
     expect(res.statusCode).toEqual(201);
+    _id = res._body._id;
+  });
+
+  it('Update Location', async () => {
+    const res = await request(app)
+      .patch(`/location/${_id}`)
+      .send({
+        name: 'diadiemtest',
+        position: [112, 12],
+        information: 'Test Update'
+      });
+
+    expect(res.statusCode).toEqual(401);
+  });
+
+  it('Update Location', async () => {
+    const res = await request(app)
+      .patch(`/location/${_id}`)
+      .send({
+        name: 'diadiemtest',
+        position: [112, 12],
+        information: 'Test Update'
+      })
+      .set('Authorization', `Bearer ${admin_access_token}`);
+
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('Delete Location', async () => {
+    const res = await request(app)
+      .delete(`/location/${_id}`)
+      .send()
+      .set('Authorization', `Bearer ${admin_access_token}`);
+
+    expect(res.statusCode).toEqual(204);
+  });
+
+  it('Location at Province', async () => {
+    const res = await request(app)
+      .get('/location/locations/62402c8c1c6f58b4b42fc0eb')
+      .send();
+
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('All Location', async () => {
+    const res = await request(app).get('/location/all').send();
+
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('Location Hot', async () => {
+    const res = await request(app).get('/location/hot').send();
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('Search location', async () => {
+    const res = await request(app).get('/location/search?q=Chùa').send();
+
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('Get 1 location', async () => {
+    const res = await request(app).get('/location/bien-cua-lo').send();
+    expect(res.statusCode).toEqual(200);
+  });
+
+  it('Get Post Location', async () => {
+    const res = await request(app).get('/location/bien-cua-lo/posts').send();
+    expect(res.statusCode).toEqual(200);
   });
 });
 
+// Message
+describe('Message Endpoints', () => {});
+
+// Notify
+describe('Notify Endpoints', () => {});
+
+// Post
+describe('Post Endpoints', () => {
+  it('Get post', async () => {
+    const res = await request(app).get('/post/625143e6f527ca13625ebb76').send();
+    expect(res.statusCode).toEqual(200);
+  });
+});
+
+// Province
+describe('Province Endpoints', () => {});
+
+// Report
+describe('Report Endpoints', () => {});
+
+// Service
+describe('Service Endpoints', () => {});
+
+// Tour
+describe('Tour Endpoints', () => {});
+
+// Volunteer
+describe('Volunteer Endpoints', () => {});
+
+// Comment
 describe('Comment Endpoints', () => {
   it('Get post comment', async () => {
     const res = await request(app)
@@ -379,13 +484,6 @@ describe('Comment Endpoints', () => {
     const res = await request(app)
       .get('/comment/tour/624169bf9a6eb2bfbb65ccd4')
       .send();
-    expect(res.statusCode).toEqual(200);
-  });
-});
-
-describe('Post Endpoints', () => {
-  it('Get post', async () => {
-    const res = await request(app).get('/post/625143e6f527ca13625ebb76').send();
     expect(res.statusCode).toEqual(200);
   });
 });
