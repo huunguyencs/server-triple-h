@@ -15,7 +15,11 @@ const locationSchema = new mongoose.Schema(
     },
     province: { type: mongoose.Types.ObjectId, ref: 'provinces' },
     province_name: String,
-    position: [Number],
+    // position: [Number],
+    position: {
+      lat: Number,
+      lng: Number
+    },
     information: String
   },
   {
@@ -23,8 +27,8 @@ const locationSchema = new mongoose.Schema(
   }
 );
 
-locationSchema.index({ position: '2dsphere' }, { name: '2D Sphere Location' });
-locationSchema.index({ position: '2d' }, { name: '2D Location' });
+// locationSchema.index({ position: '2dsphere' }, { name: '2D Sphere Location' });
+// locationSchema.index({ position: '2d' }, { name: '2D Location' });
 locationSchema.index(
   {
     name: 'text',

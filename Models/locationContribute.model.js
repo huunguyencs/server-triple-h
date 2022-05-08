@@ -5,7 +5,11 @@ const locationContributeSchema = new mongoose.Schema(
     images: [{ type: String }],
     fullname: String,
     province: { type: mongoose.Types.ObjectId, ref: 'provinces' },
-    position: [Number],
+    // position: [Number],
+    position: {
+      lat: Number,
+      lng: Number
+    },
     information: String,
     isAdd: Boolean,
     contributeId: { type: mongoose.Types.ObjectId, ref: 'locations' },

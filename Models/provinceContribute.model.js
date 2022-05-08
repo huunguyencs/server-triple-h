@@ -17,7 +17,11 @@ const provinceSchema = new mongoose.Schema(
       food: [{ type: String }]
     },
     image: { type: String },
-    position: [Number],
+    // position: [Number],
+    position: {
+      lat: Number,
+      lng: Number
+    },
     provinceId: { type: mongoose.Types.ObjectId, ref: 'provinces' },
     state: {
       type: Boolean,
