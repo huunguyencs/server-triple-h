@@ -248,7 +248,7 @@ async function getFollowRecommend(userId, count = 10) {
   return res;
 }
 
-async function getSimilarTour(tourId, count = 3) {
+async function getSimilarTour(tourId, count = 10) {
   const res = await getSimilarItem(tourId, count, 'tour');
   return res;
 }

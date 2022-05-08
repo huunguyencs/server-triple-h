@@ -851,7 +851,7 @@ class TourController {
     try {
       const THIRTY_DAY_AGO = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-      const hot = await ToursRate.aggregate([
+      var tours = await ToursRate.aggregate([
         {
           $match: {
             createdAt: {
@@ -894,7 +894,7 @@ class TourController {
             localField: 'tour.userId',
             foreignField: '_id',
             as: 'tour.userId',
-            pipeline: [
+            pipeline:[
               {
                 $project: { fullname: 1, avatar: 1 }
               }
@@ -949,10 +949,15 @@ class TourController {
           $limit: 10
         }
       ]);
-
+      console.log("tours",tours)
+      tours = tours.map(tour=>({
+        ...tour.tour,
+        userId: tour.tour.userId[0]
+      }));
+      
       res.success({
         success: true,
-        hot
+        tours
       });
     } catch (err) {
       res.error(err);
@@ -1005,26 +1010,33 @@ class TourController {
 
   async getSimilar(req, res) {
     try {
+      console.log("id",req.params.id)
       let tourSimilar = await getSimilarTour(req.params.id);
       if (tourSimilar) {
         tourSimilar = tourSimilar.recomms.map(item => item.id);
+        console.log("tourSimilar",tourSimilar)
         const tours = await Tours.find({
           _id: { $in: tourSimilar },
           isPublic: true
-        }).select('name image content cost provinces locations');
-
+        })
+        // .select('name image content cost provinces locations');
+        .populate('userId joinIds likes', 'username fullname avatar')
+        console.log("tours",tours)
         res.success({
           success: true,
           tours
         });
       }
       res.notFound('Không tìm thấy tour tương tự');
-    } catch (err) {}
+    } catch (err) {
+      res.error(err);
+    }
   }
 
   async searchTourHot(req, res) {
     try {
       let { q, max, min } = req.query;
+      console.log("q",q,"max",max,"min",min)
       max = max ? parseInt(max) : null;
       min = min ? parseInt(min) : null;
       var query = {};
@@ -1120,13 +1132,10 @@ class TourController {
           $limit: 30
         }
       ]);
-      console.log(tours);
-
+      
       hot = hot.map(item => item._id.toString());
-      console.log(hot);
 
       tours = tours.filter(item => hot.includes(item._id.toString()));
-
       res.success({
         success: true,
         tours
