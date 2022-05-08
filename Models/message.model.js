@@ -2,13 +2,12 @@ const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
     conversation: { type: mongoose.Types.ObjectId, ref: 'conversations' },
-    // recipient: { type: mongoose.Types.ObjectId, ref: "users" },
     sender: { type: mongoose.Types.ObjectId, ref: "users" },
     text:String,
-    seen:{
-        type: Boolean,
-        default: false
-    }
+    seen: [{
+        member: { type: mongoose.Types.ObjectId, ref: 'users' },
+        isSeen: { type: Boolean }
+    }],
 },{
     timestamps: true
 })

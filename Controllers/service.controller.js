@@ -69,18 +69,33 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const { name, description, type, province, images, cost, discount } =
-        req.body;
+      const {
+        name,
+        description,
+        contact,
+        andress,
+        position,
+        type,
+        province,
+        images,
+        cost,
+        discount,
+        attribute
+      } = req.body;
 
       const service = await Services.findOneAndUpdate(
         { _id: req.params.id, cooperator: req.user._id },
         {
           name,
           description,
+          attribute,
+          contact,
           type,
           province,
-          images,
           cost,
+          andress,
+          position,
+          images,
           discount
         },
         { new: true }
@@ -130,9 +145,9 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const service = await Services.findById(req.params.id).populate(
-        'cooperator'
-      );
+      const service = await Services.findById(req.params.id)
+        .populate('cooperator')
+        .populate('province', 'fullname name position');
       res.success({
         success: true,
         message: 'get info 1 Service success',
