@@ -1,21 +1,24 @@
 const mongoose = require('mongoose');
 
-const eventContributeSchema = new mongoose.Schema({
+const eventContributeSchema = new mongoose.Schema(
+  {
     description: String,
     timedes: String,
-    name: {
-        type: String,
-        required: true,
-        unique: true
-    },
     fullname: String,
     provinceId: { type: mongoose.Types.ObjectId, ref: 'provinces' },
     images: [{ type: String }],
     time: Number,
-    calendarType: Boolean // False: AL, True: DL
-}, {
+    calendarType: Boolean, // False: AL, True: DL,
+    isAdd: Boolean,
+    contributeId: { type: mongoose.Types.ObjectId, ref: 'events' },
+    state: {
+      type: Boolean,
+      default: false
+    }
+  },
+  {
     timestamps: true
-})
+  }
+);
 
-
-module.exports = mongoose.model('event_contributes', eventContributeSchema)
+module.exports = mongoose.model('event_contributes', eventContributeSchema);

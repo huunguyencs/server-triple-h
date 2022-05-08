@@ -17,7 +17,7 @@ router.get('/top_near', ServiceController.getTopServiceNear);
 router.post('/review/:id', auth, ServiceController.reviewService);
 
 router.get('/:id', ServiceController.getService);
-router.patch('/:id', auth, authRole([1]), ServiceController.updateService);
+router.put('/:id', auth, authRole([1]), ServiceController.updateService);
 router.delete('/:id', auth, authRole([1]), ServiceController.deleteService);
 
 module.exports = router;

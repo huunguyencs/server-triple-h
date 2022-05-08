@@ -26,7 +26,7 @@ class HelpController {
         images
       });
       await help.save();
-      res.success({
+      res.created({
         success: true,
         help: {
           ...help._doc,

@@ -59,17 +59,9 @@ class LocationController {
         return res.notFound('Không tìm thấy địa điểm');
       }
 
-      const { name, images, province, position, information } = req.body;
-
       const location = await Locations.findByIdAndUpdate(
         req.params.id,
-        {
-          name,
-          images,
-          province,
-          position,
-          information
-        },
+        req.body,
         { new: true }
       ).populate('province', 'name fullname');
 

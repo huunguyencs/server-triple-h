@@ -230,11 +230,10 @@ class UserController {
   async changePassword(req, res) {
     try {
       const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) return res.errorClient('');
       const user = await Users.findById(req.user._id);
       if (!user) {
-        res
-          .status(404)
-          .json({ success: false, message: 'Không tìm thấy user!' });
+        res.notFound('Không tìm thấy user!');
       }
       const passwordValid = await bcrypt.compare(oldPassword, user.password);
       if (passwordValid) {
@@ -247,7 +246,7 @@ class UserController {
           message: 'Cập nhật mật khẩu thành công!'
         });
       } else {
-        res.status(400).json({ success: false, message: 'Sai mật khẩu cũ!' });
+        res.errorClient('Sai mật khẩu cũ!');
       }
     } catch (err) {
       res.error(err);
@@ -283,32 +282,17 @@ class UserController {
   }
   async editProfile(req, res) {
     try {
-      const {
-        username,
-        fullname,
-        email,
-        phone,
-        birthday,
-        gender,
-        andress,
-        hobbies
-      } = req.body;
+      const { username, fullname, phone, birthday, gender, andress, hobbies } =
+        req.body;
 
       const user = await Users.findById(req.user._id);
 
       if (user.username !== username) {
-        const findUsername = await Users.find({ username: username });
+        const findUsername = await Users.findOne({ username: username });
         if (findUsername) {
           res
             .status(400)
             .json({ success: false, message: 'Tên tài khoản đã tồn tại!' });
-          return;
-        }
-      }
-      if (user.email !== email) {
-        const findEmail = await Users.find({ email: email });
-        if (findEmail) {
-          res.status(400).json({ success: false, message: 'Email đã tồn tại' });
           return;
         }
       }
@@ -318,7 +302,6 @@ class UserController {
         {
           username,
           fullname,
-          email,
           phone,
           birthday,
           gender,
@@ -355,10 +338,7 @@ class UserController {
             path: 'confirmAccount',
             select: 'cmnd cmndFront cmndBack cmndFace state'
           });
-        if (!user)
-          return res
-            .status(404)
-            .json({ success: false, massage: 'Người dùng không tồn tại' });
+        if (!user) return res.notFound('Người dùng không tồn tại');
         res.success({ success: true, user });
       } else {
         // res.status(404).json({ success: false, massage: "Người dùng không tồn tại" })
@@ -534,7 +514,7 @@ class UserController {
       }
 
       const recombeeUser = await getFollowRecommend(req.user._id);
-      console.log('RECOMMEND USER:', recombeeUser);
+      // console.log('RECOMMEND USER:', recombeeUser);
       if (recombeeUser) {
         rawArrFriend = [
           ...rawArrFriend,
