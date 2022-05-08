@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
-const volunteerSchema = new mongoose.Schema({
+const volunteerSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        required: true
+      type: String,
+      required: true
     },
     userId: { type: mongoose.Types.ObjectId, ref: 'users' },
     comments: [{ type: mongoose.Types.ObjectId, ref: 'comments' }],
@@ -14,9 +15,26 @@ const volunteerSchema = new mongoose.Schema({
     cost: String,
     type: String,
     users: [{ type: mongoose.Types.ObjectId, ref: 'users' }]
-}, {
+  },
+  {
     timestamps: true
-})
+  }
+);
 
+volunteerSchema.index(
+  {
+    name: 'text',
+    descriptions: 'text',
+    type: 'text'
+  },
+  {
+    name: 'Volunteer text index',
+    weights: {
+      name: 8,
+      descriptions: 4,
+      type: 6
+    }
+  }
+);
 
-module.exports = mongoose.model('volunteers', volunteerSchema)
+module.exports = mongoose.model('volunteers', volunteerSchema);

@@ -4,7 +4,7 @@ const { ip2position } = require('../utils/ip2position');
 class HelpController {
   async createHelp(req, res) {
     try {
-      let { description, position, type, positionStr, contact, expireAt, ip } =
+      let { description, position, type, positionStr, contact, ip, images } =
         req.body;
 
       console.log('HEADER CREATE HELP:', req.headers);
@@ -16,11 +16,6 @@ class HelpController {
         position = [temp.longitude, temp.latitude];
       }
 
-      if (!expireAt) {
-        expireAt = new Date();
-        expireAt.setDate(expireAt.getDate() + 2);
-        expireAt = new Date(expireAt);
-      }
       const help = new Helps({
         userId: req.user._id,
         description,
@@ -28,7 +23,7 @@ class HelpController {
         contact,
         type,
         positionStr,
-        expireAt
+        images
       });
       await help.save();
       res.success({
@@ -51,7 +46,7 @@ class HelpController {
   async getHelps(req, res) {
     try {
       let { lat, lng, ip } = req.query;
-      console.log('GET HELP POSITION:', lat, lng, ip);
+      // console.log('GET HELP POSITION:', lat, lng, ip);
       if (!lat || !lng || lat === 'undefined' || lng === 'undefined') {
         let ipClient;
         if (ip) {
@@ -71,7 +66,7 @@ class HelpController {
         lng = temp.longitude;
       }
 
-      console.log('GET HELP:', lat, lng);
+      // console.log('GET HELP:', lat, lng);
       lat = parseFloat(lat);
       lng = parseFloat(lng);
 
@@ -142,6 +137,23 @@ class HelpController {
         { new: true }
       ).populate('userId', 'avatar fullname');
 
+      res.success({
+        success: true,
+        help
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getHelpDetail(req, res) {
+    try {
+      const { id } = req.params;
+      const help = await Helps.findById(id).populate(
+        'userId',
+        'avatar fullname'
+      );
+      if (!help) return res.notFound('Không tìm thấy trợ giúp');
       res.success({
         success: true,
         help

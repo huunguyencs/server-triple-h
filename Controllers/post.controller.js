@@ -2,6 +2,7 @@ const Posts = require('../Models/post.model');
 const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
+const LocationsRate = require('../Models/locationsRate.model');
 const {
   createItem,
   shareItem,
@@ -9,7 +10,8 @@ const {
   likeItem,
   unLikeItem,
   viewDetailItem,
-  getPostRecomment
+  getPostRecommend,
+  updatePropsItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -191,9 +193,14 @@ class PostController {
           default:
             break;
         }
+        const rateLoc = new LocationsRate({
+          location_id: locationId,
+          user_id: req.user._id,
+          rate: parseInt(rate)
+        });
+        await rateLoc.save();
+        reviewItem(req.user._id, locationId, rate);
       }
-
-      reviewItem(req.user._id, locationId, rate);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -236,6 +243,8 @@ class PostController {
           }
         });
       res.success({ success: true, message: 'update post successful', post });
+
+      updatePropsItem(req.params.id, 'post', hashtags, content);
 
       if (rate && parseInt(rate) !== parseInt(oldRate)) {
         switch (parseInt(oldRate)) {
@@ -337,6 +346,14 @@ class PostController {
           default:
             break;
         }
+
+        const locationRate = new LocationsRate({
+          location_id: locationId,
+          user_id: req.user._id,
+          rate: parseInt(rate)
+        });
+
+        await locationRate.save();
       }
     } catch (err) {
       console.log(err);
@@ -406,16 +423,15 @@ class PostController {
 
       postId = postId.map(item => item._id);
 
-      // let postRecommendId = await getPostRecomment(req.user._id, 20);
-      // console.log('RECOMMEND:', postRecommendId);
-      // if (postRecommendId?.recomms) {
-      //   postRecommendId = postRecommendId.recomms.map(item => item.id);
-      //   postId = postId.concat(
-      //     postRecommendId.filter(item => postId.indexOf(item) < 0)
-      //   );
-      // }
-
       console.log(postId);
+      let postRecommendId = await getPostRecommend(req.user._id, 20);
+      // console.log('RECOMMEND:', postRecommendId);
+      if (postRecommendId) {
+        postRecommendId = postRecommendId.recomms.map(item => item.id);
+        postId = postId.concat(
+          postRecommendId.filter(item => postId.indexOf(item) < 0)
+        );
+      }
 
       postId = shuffle(postId);
       var currentPostId = postId.slice(0, 10);
@@ -553,7 +569,8 @@ class PostController {
       res.success({
         success: true,
         message: 'unlike post success',
-        likes: post.likes
+        likes: post.likes,
+        post
       });
 
       unLikeItem(req.user._id, req.params.id);
@@ -665,13 +682,15 @@ class PostController {
 
   async postList(req, res) {
     try {
-      const { list } = req.body;
-      var { offset, detail, limit } = req.query;
+      let { list } = req.body;
+      let { offset, detail, limit } = req.query;
       offset = offset || 0;
       detail = detail || false;
       limit = limit || 0;
 
-      var posts;
+      list = list.map(item => ObjectId(item));
+
+      let posts;
 
       if (detail) {
         posts = await Posts.find({
@@ -714,13 +733,17 @@ class PostController {
 
       res.success({ success: true, posts });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
 
   async getAll(req, res) {
     try {
-      const posts = await Posts.find({}, { _id: 1, createdAt: 1, isPostReview: 1 });
+      const posts = await Posts.find(
+        {},
+        { _id: 1, createdAt: 1, isPostReview: 1 }
+      );
       res.success({
         success: true,
         posts

@@ -5,10 +5,7 @@ class NotifyController {
   async createNotify(req, res) {
     try {
       const { id, recipients, url, content, text, image } = req.body;
-      // console.log(req.body);
-
-      // if (recipients.includes(req.user._id.toString())) return;
-
+      
       const seen = recipients.map(item => {
         return {
           id_recipient: item,
@@ -49,7 +46,7 @@ class NotifyController {
   async deleteNotify(req, res) {
     try {
       const notify = await Notifies.findOneAndDelete({
-        _id: req.params.id,
+        id: req.params.id,
         url: req.query.url,
       });
 

@@ -9,7 +9,8 @@ const {
   createUser,
   saveItem,
   unSaveItem,
-  getFollowRecomment
+  getFollowRecommend,
+  setPrefUser
 } = require('../utils/recombee');
 
 class UserController {
@@ -66,7 +67,6 @@ class UserController {
       const { fullname, username, email, phone, password } = user;
 
       const check = await Users.findOne({ email });
-      // if (check) return res.status(400).json({ message: "Email đã tồn tại!" })
       if (check) return res.errorClient('Email đã tồn tại!');
 
       const newUser = new Users({
@@ -333,6 +333,10 @@ class UserController {
         message: 'Cập nhật thông tin tài khoản thành công!',
         newUser
       });
+
+      if (hobbies?.length > 0) {
+        setPrefUser(req.user._id, hobbies);
+      }
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -529,14 +533,14 @@ class UserController {
         }
       }
 
-      // const recombeeUser = await getFollowRecomment(req.user._id);
-      // console.log('RECOMMEND USER:', recombeeUser);
-      // if (recombeeUser) {
-      //   rawArrFriend = [
-      //     ...rawArrFriend,
-      //     ...recombeeUser.recomms.map(item => item.id)
-      //   ];
-      // }
+      const recombeeUser = await getFollowRecommend(req.user._id);
+      console.log('RECOMMEND USER:', recombeeUser);
+      if (recombeeUser) {
+        rawArrFriend = [
+          ...rawArrFriend,
+          ...recombeeUser.recomms.map(item => item.id)
+        ];
+      }
 
       if (user.hobbies) {
         const hobbies = user.hobbies.split(',').map(item => `/${item}/`);
@@ -707,7 +711,18 @@ class UserController {
 
   async updateStatus(req, res) {
     try {
-    } catch (err) {}
+      const { id, status, role, idConfirm } = req.body;
+      if (!id) return res.notFound('Không tìm thấy user');
+      if (status) {
+        await Confirms.findOneAndUpdate({ _id: idConfirm }, { state: status });
+      }
+      if (role) {
+        await Users.findOneAndUpdate({ _id: id }, { role });
+      }
+      res.success({ success: true, message: 'Cập nhật thành công!' });
+    } catch (err) {
+      res.error(err);
+    }
   }
 
   async getUserByArray(req, res) {
@@ -744,6 +759,10 @@ class UserController {
         message: 'Cập nhật trạng thái thành công',
         user
       });
+
+      if (req.body?.hobbies) {
+        setPrefUser(req.user._id, req.body.hobbies);
+      }
     } catch (err) {
       res.error(err);
     }

@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 
-const tourSchema = new mongoose.Schema({
+const tourSchema = new mongoose.Schema(
+  {
     content: String,
     tour: [{ type: mongoose.Types.ObjectId, ref: 'tour_dates' }],
     name: {
-        type: String
+      type: String
     },
     isPublic: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true
     },
     joinIds: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
     likes: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
@@ -19,10 +20,31 @@ const tourSchema = new mongoose.Schema({
     shareId: { type: mongoose.Types.ObjectId, ref: 'tours' },
     cost: Number,
     provinces: [{ type: String }],
-    locations: [{ type: String }],
-}, {
+    locations: [{ type: String }]
+  },
+  {
     timestamps: true
-})
+  }
+);
 
+tourSchema.index(
+  {
+    name: 'text',
+    provinces: 'text',
+    locations: 'text',
+    content: 'text',
+    hashtags: 'text'
+  },
+  {
+    name: 'Tour text index',
+    weights: {
+      name: 6,
+      provinces: 8,
+      locations: 7,
+      content: 6,
+      hashtags: 4
+    }
+  }
+);
 
-module.exports = mongoose.model('tours', tourSchema)
+module.exports = mongoose.model('tours', tourSchema);
