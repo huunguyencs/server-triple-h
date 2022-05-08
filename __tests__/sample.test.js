@@ -363,7 +363,11 @@ describe('Location Endpoints', () => {
         images:
           'https://res.cloudinary.com/dqxvfu5k1/image/upload/v1648394446/mfjkvaqccfqlidgpp0ez.jpg',
         province: '62402c8c1c6f58b4b42fc0eb',
-        position: [108, 16],
+        // position: [108, 16],
+        position: {
+          lng: 108,
+          lat: 16
+        },
         information: 'test',
         fullname: 'Địa điểm test'
       })
@@ -377,7 +381,11 @@ describe('Location Endpoints', () => {
       .patch(`/location/${_id}`)
       .send({
         name: 'diadiemtest',
-        position: [112, 12],
+        // position: [112, 12],
+        position: {
+          lng: 112,
+          lat: 12
+        },
         information: 'Test Update'
       });
 
@@ -389,7 +397,11 @@ describe('Location Endpoints', () => {
       .patch(`/location/${_id}`)
       .send({
         name: 'diadiemtest',
-        position: [112, 12],
+        // position: [112, 12],
+        position: {
+          lng: 112,
+          lat: 12
+        },
         information: 'Test Update'
       })
       .set('Authorization', `Bearer ${admin_access_token}`);
