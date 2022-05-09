@@ -683,7 +683,7 @@ class UserController {
         return;
       }
       await Users.findByIdAndDelete(id);
-      res.deleted('Xóa user thành công');
+      res.deleted();
     } catch (err) {
       res.error(err);
     }

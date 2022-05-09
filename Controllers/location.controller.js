@@ -49,6 +49,7 @@ class LocationController {
         res.notFound('Không tìm thấy tỉnh!');
       }
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

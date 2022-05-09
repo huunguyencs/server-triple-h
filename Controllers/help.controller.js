@@ -7,6 +7,8 @@ class HelpController {
       let { description, position, type, positionStr, contact, ip, images } =
         req.body;
 
+      console.log(req.body);
+
       console.log('HEADER CREATE HELP:', req.headers);
       if (!position) {
         let temp;
@@ -80,11 +82,10 @@ class HelpController {
             $maxDistance: 5000
           }
         }
-      }).sort('-updatedAt').populate('userId', 'avatar fullname')
-      .populate(
-        'state',
-        'avatar fullname'
-      )
+      })
+        .sort('-updatedAt')
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
       res.success({
         success: true,
         helps
@@ -98,14 +99,8 @@ class HelpController {
   async getMyHelps(req, res) {
     try {
       const helps = await Helps.find({ userId: req.user._id })
-      .populate(
-        'userId',
-        'avatar fullname'
-      )
-      .populate(
-        'state',
-        'avatar fullname'
-      )
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
       res.success({
         success: true,
         helps
@@ -121,17 +116,16 @@ class HelpController {
       const help = await Helps.findOneAndUpdate(
         { _id: id, userId: req.user._id },
         req.body
-      ).populate('userId', 'avatar fullname')
-      .populate(
-        'state',
-        'avatar fullname'
       )
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
 
       res.success({
         success: true,
         help
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
@@ -147,11 +141,9 @@ class HelpController {
           }
         },
         { new: true }
-      ).populate('userId', 'avatar fullname')
-      .populate(
-        'state',
-        'avatar fullname'
       )
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
 
       res.success({
         success: true,
@@ -171,11 +163,9 @@ class HelpController {
           $pull: { state: req.user._id }
         },
         { new: true }
-      ).populate('userId', 'avatar fullname')
-      .populate(
-        'state',
-        'avatar fullname'
       )
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
 
       res.success({
         success: true,
@@ -190,14 +180,8 @@ class HelpController {
     try {
       const { id } = req.params;
       const help = await Helps.findById(id)
-      .populate(
-        'userId',
-        'avatar fullname'
-      )
-      .populate(
-        'state',
-        'avatar fullname'
-      )
+        .populate('userId', 'avatar fullname')
+        .populate('state', 'avatar fullname');
       if (!help) return res.notFound('Không tìm thấy trợ giúp');
       res.success({
         success: true,
@@ -212,9 +196,7 @@ class HelpController {
     try {
       const { id } = req.params;
       await Helps.findOneAndRemove({ _id: id, userId: req.user._id });
-      res.deleted({
-        success: true
-      });
+      res.deleted();
     } catch (err) {
       res.error(err);
     }

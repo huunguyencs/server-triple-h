@@ -25,6 +25,8 @@ class ServiceController {
         discount
       } = req.body;
 
+      if (req.user.role !== 1) return res.unauthorized();
+
       const newService = new Services({
         cooperator: req.user._id,
         name,
@@ -131,7 +133,7 @@ class ServiceController {
         cooperator: req.user._id
       });
 
-      res.deleted('Xóa dịch vụ thành công!');
+      res.deleted();
     } catch (err) {
       console.log(err);
       res.error(err);

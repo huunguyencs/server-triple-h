@@ -110,7 +110,7 @@ class EventController {
         return;
       }
       await Events.findByIdAndDelete(id);
-      res.deleted('Xóa sự kiện thành công');
+      res.deleted();
     } catch (err) {
       res.error(err);
     }
