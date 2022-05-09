@@ -37,6 +37,8 @@ app.use('/message', require('./Routers/message.router'));
 app.use('/volunteer', require('./Routers/volunteer.router'));
 app.use('/report', require('./Routers/report.router'));
 app.use('/help', require('./Routers/help.router'));
+app.use('/event_contribute',require('./Routers/eventContribute.router'))
+app.use('/location_contribute',require('./Routers/locationContribute.router'))
 
 //connect MongoDB
 mongoose
