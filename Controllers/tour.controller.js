@@ -949,7 +949,7 @@ class TourController {
           $limit: 10
         }
       ]);
-      console.log("tours",tours)
+      // console.log("tours",tours)
       tours = tours.map(tour=>({
         ...tour.tour,
         userId: tour.tour.userId[0]
