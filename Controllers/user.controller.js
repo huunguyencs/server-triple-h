@@ -491,7 +491,8 @@ class UserController {
 
   async getFriendRecommend(req, res) {
     try {
-      const { limit } = req.query;
+      let { limit } = req.query;
+      limit = parseInt(limit);
       var user = await Users.findById(req.user._id, 'followings').populate(
         'followings',
         'followings'
@@ -499,7 +500,7 @@ class UserController {
 
       const followeds = [
         ...user.followings.map(item => item._id.toString()),
-        user._id.toString()
+        req.user._id
       ];
 
       if (user) {
@@ -543,7 +544,7 @@ class UserController {
         return counts[b] - counts[a];
       });
 
-      if (sorted && sorted.length) {
+      if (sorted && sorted.length > 0) {
         if (limit) {
           sorted = sorted.slice(0, limit);
           let recommend = await Users.find(
@@ -588,7 +589,7 @@ class UserController {
           },
           {
             $sample: {
-              size: limit
+              size: 5
             }
           },
           {
@@ -603,7 +604,6 @@ class UserController {
 
         res.success({
           success: true,
-          message: `Lấy max 50 recommend`,
           recommend
         });
       }
