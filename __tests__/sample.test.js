@@ -17,6 +17,24 @@ describe('User Endpoints', () => {
   //   expect(res.statusCode).toEqual(201);
   // });
 
+  it('Login Email Wrong', async () => {
+    const res = await request(app).post('/user/login').send({
+      email: 'huunguyen@gmail.com',
+      password: 'Vanhuu123'
+    });
+
+    expect(res.statusCode).toEqual(400);
+  });
+
+  it('Login Password Wrong', async () => {
+    const res = await request(app).post('/user/login').send({
+      email: 'admin@gmail.com',
+      password: 'Vanhuu123'
+    });
+
+    expect(res.statusCode).toEqual(400);
+  });
+
   let refresh_token = '';
 
   it('Login', async () => {
@@ -39,7 +57,7 @@ describe('User Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
-  it('Change avatar', async () => {
+  it('Change avatar No Auth', async () => {
     const res = await request(app).patch('/user/change_avatar').send({
       avatar: 'https://emblemsbf.com/img/77111.webp'
     });
@@ -86,7 +104,7 @@ describe('User Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
-  it('Change Password', async () => {
+  it('Change Password Fail', async () => {
     const res = await request(app)
       .patch('/user/change_password')
       .send({
@@ -97,16 +115,16 @@ describe('User Endpoints', () => {
     expect(res.statusCode).toEqual(400);
   });
 
-  // it('Change Password', async () => {
-  //   const res = await request(app)
-  //     .patch('/user/change_password')
-  //     .send({
-  //       oldPassword: 'Vanhuu123',
-  //       newPassword: 'Vanhuu0405'
-  //     })
-  //     .set('Authorization', `Bearer ${access_token}`);
-  //   expect(res.statusCode).toEqual(200);
-  // });
+  it('Change Password', async () => {
+    const res = await request(app)
+      .patch('/user/change_password')
+      .send({
+        oldPassword: 'Vanhuu123',
+        newPassword: 'Vanhuu0405'
+      })
+      .set('Authorization', `Bearer ${access_token}`);
+    expect(res.statusCode).toEqual(200);
+  });
 
   it('Get all user', async () => {
     const res = await request(app)
@@ -155,7 +173,7 @@ describe('User Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
-  it('Get User By Id', async () => {
+  it('Get User By Id Not Found', async () => {
     const res = await request(app).get('/user/623c966102981f76be675a0r').send();
     expect(res.statusCode).toEqual(404);
   });
@@ -184,13 +202,13 @@ describe('User Endpoints', () => {
 
 // Event
 describe('Event Endpoints', () => {
-  it('Create Event', async () => {
+  it('Create Event No Auth', async () => {
     const res = await request(app)
       .post('/event/create')
       .send({
         description: 'test create event',
         timedes: 'Mùng 1 tháng 1',
-        name: 'asdasdasdasdasd',
+        name: 'test-event-1',
         fullname: 'Tết Nguyên Đán',
         images:
           'https://i.ex-cdn.com/tintucvietnam.vn/files/tuanluc/2022/01/26/lich-nghi-tet-nguyen-dan-2022-cac-ngan-hang-0855.jpg',
@@ -210,7 +228,7 @@ describe('Event Endpoints', () => {
       .send({
         description: 'test create event',
         timedes: 'Mùng 1 tháng 1',
-        name: 'asdasdasdasdasdsdfsdf',
+        name: 'test-event-1',
         fullname: 'Tết Nguyên Đán',
         images:
           'https://i.ex-cdn.com/tintucvietnam.vn/files/tuanluc/2022/01/26/lich-nghi-tet-nguyen-dan-2022-cac-ngan-hang-0855.jpg',
@@ -230,7 +248,7 @@ describe('Event Endpoints', () => {
       .send({
         description: 'test create event',
         timedes: 'Mùng 1 tháng 2',
-        name: 'tet-nguyen-dan-holishit',
+        name: 'test-event-1',
         fullname: 'Tết Nguyên Đán',
         images:
           'https://i.ex-cdn.com/tintucvietnam.vn/files/tuanluc/2022/01/26/lich-nghi-tet-nguyen-dan-2022-cac-ngan-hang-0855.jpg',
@@ -359,7 +377,7 @@ describe('Location Endpoints', () => {
     const res = await request(app)
       .post('/location/create')
       .send({
-        name: 'dasdjaskldjkl',
+        name: 'test-location-1',
         images:
           'https://res.cloudinary.com/dqxvfu5k1/image/upload/v1648394446/mfjkvaqccfqlidgpp0ez.jpg',
         province: '62402c8c1c6f58b4b42fc0eb',
@@ -375,11 +393,11 @@ describe('Location Endpoints', () => {
     _id = res._body.newLocation._id;
   });
 
-  it('Update Location', async () => {
+  it('Update Location No Auth', async () => {
     const res = await request(app)
       .patch(`/location/${_id}`)
       .send({
-        name: 'dasjdlkasjdkl',
+        name: 'test-location-1',
         // position: [112, 12],
         position: {
           lng: 112,
@@ -395,7 +413,7 @@ describe('Location Endpoints', () => {
     const res = await request(app)
       .patch(`/location/${_id}`)
       .send({
-        name: 'abczxyzyasfadsa',
+        name: 'test-location-1',
         // position: [112, 12],
         position: {
           lng: 112,
@@ -442,6 +460,11 @@ describe('Location Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
+  it('Get 1 location Not Found', async () => {
+    const res = await request(app).get('/location/bien').send();
+    expect(res.statusCode).toEqual(404);
+  });
+
   it('Get 1 location', async () => {
     const res = await request(app).get('/location/bien-cua-lo').send();
     expect(res.statusCode).toEqual(200);
@@ -477,7 +500,7 @@ describe('Post Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
-  it('Create Post', async () => {
+  it('Create Post No Auth', async () => {
     const res = await request(app)
       .post('/post/create_post')
       .send({
@@ -594,11 +617,11 @@ describe('Post Endpoints', () => {
 // Province
 describe('Province Endpoints', () => {
   let _id = '';
-  it('Create Province', async () => {
+  it('Create Province No Auth', async () => {
     const res = await request(app)
       .post('/province/create')
       .send({
-        name: 'dasdasdasd',
+        name: 'test-province-1',
         fullname: 'Test Province',
         image:
           'https://phocode.com/wp-content/uploads/2020/10/placeholder-1.png',
@@ -616,7 +639,7 @@ describe('Province Endpoints', () => {
     const res = await request(app)
       .post('/province/create')
       .send({
-        name: 'asdasdasdasd',
+        name: 'test-province-1',
         fullname: 'Test Province',
         image:
           'https://phocode.com/wp-content/uploads/2020/10/placeholder-1.png',
@@ -673,7 +696,7 @@ describe('Province Endpoints', () => {
     const res = await request(app)
       .patch(`/province/${_id}`)
       .send({
-        name: 'dasdasdasd',
+        name: 'test-province-1',
         fullname: 'Test Update',
         information: 'test'
       })
@@ -688,6 +711,22 @@ describe('Report Endpoints', () => {});
 
 // Service
 describe('Service Endpoints', () => {
+  it('Create Service No Auth', async () => {
+    const res = await request(app)
+      .post('/service/create')
+      .send({
+        name: 'Test',
+        description: 'Test description',
+        contact: 'test contact',
+        type: 'nha hang',
+        province: '62402c8c1c6f58b4b42fc0eb',
+        cost: 'test cost'
+      })
+      .set('Authorization', `Bearer ${admin_access_token}`);
+
+    expect(res.statusCode).toEqual(401);
+  });
+
   let id = '';
   it('Create Service', async () => {
     const res = await request(app)
