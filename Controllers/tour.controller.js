@@ -752,6 +752,8 @@ class TourController {
         }
       );
 
+      if (!tour) return res.notFound();
+
       if (tour.isPublic) {
         const tourRate = new ToursRate({
           tour_id: id,

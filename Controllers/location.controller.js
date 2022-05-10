@@ -56,15 +56,18 @@ class LocationController {
 
   async updateLocation(req, res) {
     try {
-      if (!ObjectId.isValid(req.params.id)) {
-        return res.notFound('Không tìm thấy địa điểm');
+      const { id } = req.params;
+
+      if (!ObjectId.isValid(id)) {
+        res.notFound('Không tìm thấy địa điểm');
+        return;
       }
 
-      const location = await Locations.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-      ).populate('province', 'name fullname');
+      const { information } = req.body;
+
+      const location = await Locations.findByIdAndUpdate(id, req.body, {
+        new: true
+      }).populate('province', 'name fullname');
 
       res.success({
         success: true,
@@ -73,33 +76,32 @@ class LocationController {
       });
 
       updatePropsItem(
-        req.params.id,
+        id,
         'location',
         [location.province_name, location.fullname],
         information
       );
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
 
   async deleteLocation(req, res) {
     try {
-      if (!Object.isValid(req.params.id)) {
+      if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy địa điểm');
         return;
       }
       const location = await Locations.findByIdAndDelete(req.params.id);
-      if (location.posts != null)
+      if (location.posts)
         await Posts.deleteMany({ _id: { $in: location.posts } });
 
-      res.success({
-        success: true,
-        message: 'Delete Location success'
-      });
+      res.deleted();
 
       // deleteItem(req.params.id);
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

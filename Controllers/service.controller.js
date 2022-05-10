@@ -351,22 +351,24 @@ class ServiceController {
 
   async getTopServiceNear(req, res) {
     try {
-      const { lat, lng } = req.query;
+      let { lat, lng } = req.query;
       if (!lat || !lng || lat === 'undefined' || lng === 'undefined')
         return res.error('Thiếu dữ liệu');
 
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+
+      console.log(lat);
+      console.log(lng);
+
       const services = await Services.aggregate([
         {
-          $match: {
-            position: {
-              $near: {
-                $geometry: {
-                  type: 'Point',
-                  coordinates: [lng, lat]
-                },
-                $maxDistance: 10 * 1000
-              }
-            }
+          $geoNear: {
+            includeLocs: 'position',
+            distanceField: 'distance',
+            near: { type: 'Point', coordinates: [lng, lat] },
+            maxDistance: 10000,
+            spherical: true
           }
         },
         {
@@ -399,6 +401,7 @@ class ServiceController {
         services
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
