@@ -543,32 +543,63 @@ class UserController {
         return counts[b] - counts[a];
       });
 
-      if (limit) {
-        sorted = sorted.slice(0, limit);
-        let recommend = await Users.find(
-          {
-            _id: {
-              $in: sorted
-            }
-          },
-          'username fullname avatar'
-        );
+      if (sorted && sorted.length) {
+        if (limit) {
+          sorted = sorted.slice(0, limit);
+          let recommend = await Users.find(
+            {
+              _id: {
+                $in: sorted
+              }
+            },
+            'username fullname avatar'
+          );
 
-        res.success({
-          success: true,
-          message: `Lấy top ${limit} recommend`,
-          recommend
-        });
+          res.success({
+            success: true,
+            message: `Lấy top ${limit} recommend`,
+            recommend
+          });
+        } else {
+          sorted = sorted.slice(0, 50);
+          let recommend = await Users.find(
+            {
+              _id: {
+                $in: sorted
+              }
+            },
+            'username fullname avatar'
+          );
+
+          res.success({
+            success: true,
+            message: `Lấy max 50 recommend`,
+            recommend
+          });
+        }
       } else {
-        sorted = sorted.slice(0, 50);
-        let recommend = await Users.find(
+        const recommend = Users.aggregate([
           {
-            _id: {
-              $in: sorted
+            $match: {
+              _id: {
+                $nin: followeds
+              }
             }
           },
-          'username fullname avatar'
-        );
+          {
+            $sample: {
+              size: limit
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              fullname: 1,
+              avatar: 1
+            }
+          }
+        ]);
 
         res.success({
           success: true,
