@@ -578,7 +578,7 @@ class UserController {
           });
         }
       } else {
-        const recommend = Users.aggregate([
+        const recommend = await Users.aggregate([
           {
             $match: {
               _id: {
