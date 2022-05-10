@@ -318,7 +318,7 @@ class UserController {
       });
 
       if (hobbies?.length > 0) {
-        setPrefUser(req.user._id, hobbies);
+        setPrefUser(req.user._id, hobbies.split(','));
       }
     } catch (err) {
       console.log(err);
@@ -772,9 +772,10 @@ class UserController {
       });
 
       if (req.body?.hobbies) {
-        setPrefUser(req.user._id, req.body.hobbies);
+        setPrefUser(req.user._id, req.body.hobbies.split(','));
       }
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

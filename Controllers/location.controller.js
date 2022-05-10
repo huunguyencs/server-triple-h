@@ -17,7 +17,7 @@ class LocationController {
       const { name, images, province, position, information, fullname } =
         req.body;
 
-      const pro = Provinces.findById(province).select('fullname');
+      const pro = await Provinces.findById(province).select('fullname');
       if (pro) {
         const province_name = pro.fullname;
         const newLocation = new Locations({
