@@ -87,6 +87,7 @@ class UserController {
       createUser(newUser._doc._id);
     } catch (err) {
       // return res.status(500).json({ message: err.message })
+      console.log(err);
       return res.error(err);
     }
   }
