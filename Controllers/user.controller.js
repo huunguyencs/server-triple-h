@@ -500,9 +500,9 @@ class UserController {
         'followings'
       );
 
-      const followeds = [
+      let followeds = [
         ...user.followings.map(item => item._id.toString()),
-        req.user._id
+        req.user._id.toString()
       ];
 
       if (user) {
@@ -563,6 +563,7 @@ class UserController {
           recommend
         });
       } else {
+        followeds = followeds.map(item => new ObjectId(item));
         const recommend = await Users.aggregate([
           {
             $match: {
