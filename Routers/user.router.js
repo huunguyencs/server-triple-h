@@ -36,6 +36,8 @@ router.put('/:id/unfollow', auth, UserController.unfollow); // id là id của n
 router.put('/save_tour', auth, UserController.saveTour);
 router.put('/unsaved_tour', auth, UserController.unsaveTour);
 
+router.patch('/ban/:id', auth, authRole([2]), UserController.banUser);
+
 router.delete('/delete/:id', auth, authRole([2]), UserController.deleteUser);
 router.patch(
   '/update_status',
