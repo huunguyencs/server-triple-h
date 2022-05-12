@@ -57,6 +57,10 @@ const userSchema = new mongoose.Schema(
     is_new: {
       type: Boolean,
       default: true
+    },
+    state: {
+      type: Boolean,
+      default: false
     }
   },
   {

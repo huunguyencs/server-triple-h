@@ -107,6 +107,8 @@ class UserController {
       // if (!passwordValid) return res.status(400).json({ success: false, message: "Mật khẩu không đúng!" })
       if (!passwordValid) return res.errorClient('Mật khẩu không đúng!');
 
+      if (user.state) return res.errorClient('Tài khoản của bạn đã bị ban');
+
       //all Good
       //Return Token
       // const accessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '5m'})
@@ -761,6 +763,21 @@ class UserController {
       }
     } catch (err) {
       console.log(err);
+      res.error(err);
+    }
+  }
+
+  async banUser(req, res) {
+    try {
+      const { status } = req.body;
+      await Users.findByIdAndUpdate(req.params.id, {
+        status
+      });
+      res.success({
+        success: true,
+        message: 'Cập nhật trạng thái thành công'
+      });
+    } catch (err) {
       res.error(err);
     }
   }
