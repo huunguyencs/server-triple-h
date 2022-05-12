@@ -603,7 +603,9 @@ class UserController {
   async getAll(req, res) {
     try {
       const users = await Users.find({})
-        .select('username fullname email role avatar confirmAccount createdAt ')
+        .select(
+          'username fullname email role avatar confirmAccount createdAt state'
+        )
         .populate({
           path: 'confirmAccount',
           select: 'state'
