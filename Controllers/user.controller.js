@@ -143,8 +143,8 @@ class UserController {
       // const refresh_token = req.cookies.refreshtoken;
       const { refresh_token } = req.body;
       //refresh_token expire
-      if (!refresh_token)
-        return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
+      if (!refresh_token) return res.errorClient('Lỗi đăng nhập');
+      // return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
 
       jwt.verify(
         refresh_token,
@@ -164,7 +164,9 @@ class UserController {
               select: 'cmnd cmndFront cmndBack cmndFace state'
             });
           // if (!user) return res.status(400).json("No token");
-          if (!user) return res.errorClient('No token');
+          if (!user) return res.errorClient('Không tìm thấy tài khoản');
+
+          if (user.state) return res.errorClient('Tài khoản của bạn đã bị ban');
 
           const accessToken = createAccessToken({ id: user._id });
 
