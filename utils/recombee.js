@@ -127,7 +127,7 @@ function createItem(id, type, categories, description) {
 
 function updatePropsItem(id, type, categories, description) {
   let value = { type: type };
-  if (categories) value.categories = categories;
+  if (categories) value.categories = JSON.stringify(categories);
   if (description) value.description = description;
   const task = new rqs.SetItemValues(id, value);
   return recombeeClient
@@ -157,13 +157,14 @@ function createUser(id) {
 }
 
 function setPrefUser(id, pref) {
-  const task = new rqs.SetUserValues(id, { pref: new Set(pref) });
+  const task = new rqs.SetUserValues(id, { pref: JSON.stringify(pref) });
   return recombeeClient
     .send(task)
     .then(() => {
       console.log('set pref user successful');
     })
-    .catch(() => {
+    .catch(err => {
+      console.log(err);
       console.log('set pref user fail');
     });
 }

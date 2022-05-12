@@ -587,6 +587,9 @@ class PostController {
         return;
       }
       const post = await Posts.findById(req.params.id);
+
+      if (!post) return res.notFound('Không tìm thấy bài viết');
+
       await Posts.findOneAndDelete({
         _id: req.params.id,
         userId: req.user._id
@@ -646,7 +649,7 @@ class PostController {
         }
       }
 
-      res.deleted('Xoá bài viết thành công');
+      res.deleted();
 
       // deleteItem(req.params.id)
     } catch (err) {

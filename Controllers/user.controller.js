@@ -87,6 +87,7 @@ class UserController {
       createUser(newUser._doc._id);
     } catch (err) {
       // return res.status(500).json({ message: err.message })
+      console.log(err);
       return res.error(err);
     }
   }
@@ -318,7 +319,7 @@ class UserController {
       });
 
       if (hobbies?.length > 0) {
-        setPrefUser(req.user._id, hobbies);
+        setPrefUser(req.user._id, hobbies.split(','));
       }
     } catch (err) {
       console.log(err);
@@ -491,15 +492,17 @@ class UserController {
 
   async getFriendRecommend(req, res) {
     try {
-      const { limit } = req.query;
+      let { limit } = req.query;
+      limit = limit || 5;
+      limit = parseInt(limit);
       var user = await Users.findById(req.user._id, 'followings').populate(
         'followings',
         'followings'
       );
 
-      const followeds = [
+      let followeds = [
         ...user.followings.map(item => item._id.toString()),
-        user._id.toString()
+        req.user._id.toString()
       ];
 
       if (user) {
@@ -543,7 +546,7 @@ class UserController {
         return counts[b] - counts[a];
       });
 
-      if (limit) {
+      if (sorted && sorted.length > 0) {
         sorted = sorted.slice(0, limit);
         let recommend = await Users.find(
           {
@@ -560,19 +563,32 @@ class UserController {
           recommend
         });
       } else {
-        sorted = sorted.slice(0, 50);
-        let recommend = await Users.find(
+        followeds = followeds.map(item => new ObjectId(item));
+        const recommend = await Users.aggregate([
           {
-            _id: {
-              $in: sorted
+            $match: {
+              _id: {
+                $nin: followeds
+              }
             }
           },
-          'username fullname avatar'
-        );
+          {
+            $sample: {
+              size: 5
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              fullname: 1,
+              avatar: 1
+            }
+          }
+        ]);
 
         res.success({
           success: true,
-          message: `Lấy max 50 recommend`,
           recommend
         });
       }
@@ -683,7 +699,7 @@ class UserController {
         return;
       }
       await Users.findByIdAndDelete(id);
-      res.deleted('Xóa user thành công');
+      res.deleted();
     } catch (err) {
       res.error(err);
     }
@@ -741,9 +757,10 @@ class UserController {
       });
 
       if (req.body?.hobbies) {
-        setPrefUser(req.user._id, req.body.hobbies);
+        setPrefUser(req.user._id, req.body.hobbies.split(','));
       }
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

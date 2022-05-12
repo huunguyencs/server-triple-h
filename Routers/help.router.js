@@ -9,6 +9,7 @@ router.get('/:id', auth, HelpControlller.getHelpDetail);
 router.post('/', auth, HelpControlller.createHelp);
 router.put('/:id', auth, HelpControlller.updateHelp);
 router.patch('/help/:id', auth, HelpControlller.help);
+router.patch('/cancel/:id', auth, HelpControlller.cancelHelp);
 router.delete('/:id', auth, HelpControlller.deleteHelp);
 
 module.exports = router;

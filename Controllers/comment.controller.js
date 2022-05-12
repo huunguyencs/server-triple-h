@@ -269,7 +269,7 @@ class CommentController {
         default:
           break;
       }
-      res.deleted({ success: true, message: 'Delete comment' });
+      res.deleted();
     } catch (err) {
       res.error(err);
     }

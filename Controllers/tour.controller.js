@@ -208,7 +208,7 @@ class TourController {
           }
         });
 
-      if (newTour) {
+      if (newTour && tour) {
         const oldTour = newTour.tour.map(item => item._id);
         let tourId = [];
         tour.forEach(item => {
@@ -358,7 +358,7 @@ class TourController {
         if (tour.comments)
           await Comments.deleteMany({ _id: { $in: tour.comments } });
         if (tour.tour) await TourDates.deleteMany({ _id: { $in: tour.tour } });
-        res.deleted('Xóa tour thành công');
+        res.deleted();
       } else {
         res.notFound('Không tìm thấy tour');
       }
@@ -751,6 +751,8 @@ class TourController {
           }
         }
       );
+
+      if (!tour) return res.notFound();
 
       if (tour.isPublic) {
         const tourRate = new ToursRate({
