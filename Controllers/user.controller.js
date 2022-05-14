@@ -287,34 +287,22 @@ class UserController {
   }
   async editProfile(req, res) {
     try {
-      const { username, fullname, phone, birthday, gender, andress, hobbies } =
-        req.body;
+      const { username } = req.body;
 
       const user = await Users.findById(req.user._id);
 
-      if (user.username !== username) {
+      if (username && user.username !== username) {
         const findUsername = await Users.findOne({ username: username });
         if (findUsername) {
-          res
+          return res
             .status(400)
             .json({ success: false, message: 'Tên tài khoản đã tồn tại!' });
-          return;
         }
       }
 
-      const newUser = await Users.findByIdAndUpdate(
-        req.user._id,
-        {
-          username,
-          fullname,
-          phone,
-          birthday,
-          gender,
-          andress,
-          hobbies
-        },
-        { new: true }
-      );
+      const newUser = await Users.findByIdAndUpdate(req.user._id, req.body, {
+        new: true
+      });
 
       res.success({
         success: true,

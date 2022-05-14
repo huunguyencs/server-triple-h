@@ -16,7 +16,7 @@ router.post('/list', PostController.postList);
 router.get('/all', auth, authRole([2]), PostController.getAll);
 
 router.get('/:id', fakeAuth, PostController.getPost);
-router.patch('/:id', auth, PostController.updatePost);
+router.put('/:id', auth, PostController.updatePost);
 router.delete('/:id', auth, PostController.deletePost);
 
 router.patch('/:id/like', auth, PostController.likePost);

@@ -89,7 +89,6 @@ class TourController {
       });
 
       createItem(
-        req.user._id,
         newTour._doc._id,
         'tour',
         [...hashtags, ...provinces, ...locations],
@@ -1012,8 +1011,8 @@ class TourController {
 
   async getSimilar(req, res) {
     try {
-      // console.log("id",req.params.id)
       let tourSimilar = await getSimilarTour(req.params.id);
+      console.log(tourSimilar);
       if (tourSimilar) {
         tourSimilar = tourSimilar.recomms.map(item => item.id);
         // console.log("tourSimilar",tourSimilar)
@@ -1024,7 +1023,7 @@ class TourController {
           // .select('name image content cost provinces locations');
           .populate('userId joinIds likes', 'username fullname avatar');
         // console.log("tours",tours)
-        res.success({
+        return res.success({
           success: true,
           tours
         });

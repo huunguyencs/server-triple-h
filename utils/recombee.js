@@ -79,8 +79,9 @@ function unBookmark(userId, itemId) {
 }
 
 async function getRecommend(userId, count, type) {
+  console.log(type);
   let i = new rqs.RecommendItemsToUser(userId, count, {
-    filter: 'type' == type,
+    filter: `"type" == "${type}"`,
     cascadeCreate: true,
     minRelevance: 'low'
   });
@@ -89,13 +90,15 @@ async function getRecommend(userId, count, type) {
 }
 
 async function getSimilarItem(itemId, count, type) {
-  let i = new rqs.RecommendItemsToItem(itemId, count, {
-    filter: 'type' == type,
+  let i = new rqs.RecommendItemsToItem(itemId, null, count, {
+    filter: `"type" == "${type}"`,
     cascadeCreate: true,
     minRelevance: 'low'
   });
   i.timeout = 10000;
-  return await recombeeClient.send(i);
+  return recombeeClient.send(i).catch(err => {
+    console.log(err);
+  });
 }
 
 async function getUserRecommend(userId, count) {
