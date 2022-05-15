@@ -26,6 +26,7 @@ router.post('/confirm_account', auth, UserController.confirmAccount);
 router.get('/recommend', auth, UserController.getFriendRecommend);
 router.get('/search_by_name', UserController.searchUsers);
 router.get('/tour_saved', auth, UserController.getTourSaved);
+router.get('/review', auth, UserController.getReviews);
 
 // lấy thông tin một user
 router.get('/:id', UserController.getUser);

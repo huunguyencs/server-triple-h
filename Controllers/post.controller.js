@@ -3,6 +3,7 @@ const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
+const LocationUser = require('../Models/locationUser.model');
 const {
   createItem,
   shareItem,
@@ -93,26 +94,37 @@ class PostController {
 
   async createReview(req, res) {
     try {
-      const {
-        content,
-        images,
-        hashtags,
-        locationId,
-        rate,
-        tourDateId,
-        indexLocation
-      } = req.body;
+      const { locationId, rate, tourDateId, indexLocation } = req.body;
+      if (!locationId) {
+        return res.errorClient('Thiếu thông tin địa điểm');
+      }
       let isPostReview = true;
       const newPost = new Posts({
         userId: req.user._id,
-        content,
-        images,
-        hashtags,
         isPostReview,
-        locationId,
-        rate
+        ...req.body
       });
       await newPost.save();
+
+      res.created({
+        success: true,
+        message: 'Create review successful',
+        newPost: {
+          ...newPost._doc,
+          userId: {
+            _id: req.user._id,
+            fullname: req.user.fullname,
+            avatar: req.user.avatar,
+            followers: req.user.followers
+          }
+        }
+      });
+
+      const newLocationUser = new LocationUser({
+        user: req.user._id,
+        review: newPost._doc._id
+      });
+      await newLocationUser.save();
 
       if (tourDateId) {
         await TourDates.findOneAndUpdate(
@@ -128,20 +140,6 @@ class PostController {
           { new: true, safe: true, upsert: true }
         );
       }
-
-      res.created({
-        success: true,
-        message: 'Create review successful',
-        newPost: {
-          ...newPost._doc,
-          userId: {
-            _id: req.user._id,
-            fullname: req.user.fullname,
-            avatar: req.user.avatar,
-            followers: req.user.followers
-          }
-        }
-      });
 
       if (rate) {
         switch (parseInt(rate)) {

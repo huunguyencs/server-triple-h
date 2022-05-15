@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
+const LocationUser = require('../Models/locationUser.model');
 const sendEmail = require('../utils/sendEmail');
 const {
   createUser,
@@ -768,6 +769,30 @@ class UserController {
       res.success({
         success: true,
         message: 'Cập nhật trạng thái thành công'
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getReviews(req, res) {
+    try {
+      const reviews = await LocationUser.find({ user: req.user._id })
+        .populate(
+          'posts',
+          'locationId content images isPostReview rate hashtags'
+        )
+        .populate({
+          path: 'posts',
+          populate: {
+            path: 'locationId',
+            select: 'name fullname images position province'
+          }
+        });
+
+      res.success({
+        success: true,
+        reviews
       });
     } catch (err) {
       res.error(err);
