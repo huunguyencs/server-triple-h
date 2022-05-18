@@ -89,8 +89,8 @@ async function getRecommend(userId, count, type) {
   return await recombeeClient.send(i);
 }
 
-async function getSimilarItem(itemId, count, type) {
-  let i = new rqs.RecommendItemsToItem(itemId, null, count, {
+async function getSimilarItem(itemId, userId, count, type) {
+  let i = new rqs.RecommendItemsToItem(itemId, userId, count, {
     filter: `"type" == "${type}"`,
     cascadeCreate: true,
     minRelevance: 'low'
@@ -130,7 +130,7 @@ function createItem(id, type, categories, description) {
 
 function updatePropsItem(id, type, categories, description) {
   let value = { type: type };
-  if (categories) value.categories = JSON.stringify(categories);
+  if (categories) value.categories = categories;
   if (description) value.description = description;
   const task = new rqs.SetItemValues(id, value);
   return recombeeClient
@@ -152,10 +152,10 @@ function createUser(id) {
   return recombeeClient
     .send(item)
     .then(res => {
-      console.log(`Create ${id} successful`);
+      console.log(`Create user ${id} successful`);
     })
     .catch(err => {
-      console.log(`Create ${id} fail`);
+      console.log(`Create user ${id} fail`);
     });
 }
 
@@ -164,11 +164,11 @@ function setPrefUser(id, pref) {
   return recombeeClient
     .send(task)
     .then(() => {
-      console.log('set pref user successful');
+      console.log('Set pref user successful');
     })
     .catch(err => {
       console.log(err);
-      console.log('set pref user fail');
+      console.log('Set pref user fail');
     });
 }
 
@@ -244,8 +244,8 @@ async function getFollowRecommend(userId, count = 10) {
   return await getUserRecommend(userId, count);
 }
 
-async function getSimilarTour(tourId, count = 3) {
-  return await getSimilarItem(tourId, count, 'tour');
+async function getSimilarTour(tourId, userId, count = 3) {
+  return await getSimilarItem(tourId, userId, count, 'tour');
 }
 
 module.exports = {

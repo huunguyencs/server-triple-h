@@ -828,7 +828,7 @@ class TourController {
       var { q, offset } = req.query;
       offset = offset || 0;
       var tours = await Tours.find(
-        { $text: { $search: q } },
+        { $text: { $search: q }, isPublic: true },
         { score: { $meta: 'textScore' } }
       )
         .sort({ score: { $meta: 'textScore' } })
@@ -857,7 +857,8 @@ class TourController {
           $match: {
             createdAt: {
               $gte: THIRTY_DAY_AGO
-            }
+            },
+            isPublic: true
           }
         },
         {
@@ -973,7 +974,8 @@ class TourController {
         const tours = await Tours.find({
           _id: {
             $in: tourRecommendId
-          }
+          },
+          isPublic: true
         })
           .populate('userId joinIds likes', 'username fullname avatar')
           .populate('tour', 'date')
@@ -1011,7 +1013,13 @@ class TourController {
 
   async getSimilar(req, res) {
     try {
-      let tourSimilar = await getSimilarTour(req.params.id);
+      let { limit } = req.query;
+      limit = parseInt(limit) || 3;
+      let tourSimilar = await getSimilarTour(
+        req.params.id,
+        req.user._id,
+        limit
+      );
       console.log(tourSimilar);
       if (tourSimilar) {
         tourSimilar = tourSimilar.recomms.map(item => item.id);
