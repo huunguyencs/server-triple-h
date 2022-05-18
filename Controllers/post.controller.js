@@ -12,7 +12,8 @@ const {
   unLikeItem,
   viewDetailItem,
   getPostRecommend,
-  updatePropsItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -46,7 +47,7 @@ class PostController {
         }
       });
 
-      createItem(newPost._doc._id, 'post', hashtags, content);
+      if (isPublic) createItem(newPost._doc._id, 'post', hashtags, content);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -94,7 +95,8 @@ class PostController {
 
   async createReview(req, res) {
     try {
-      const { locationId, rate, tourDateId, indexLocation } = req.body;
+      const { locationId, rate, tourDateId, indexLocation, hashtags, content } =
+        req.body;
       if (!locationId) {
         return res.errorClient('Thiếu thông tin địa điểm');
       }
@@ -140,11 +142,11 @@ class PostController {
           { new: true, safe: true, upsert: true }
         );
       }
-
+      let location = null;
       if (rate) {
         switch (parseInt(rate)) {
           case 1:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.0': 1 }
@@ -153,7 +155,7 @@ class PostController {
             );
             break;
           case 2:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.1': 1 }
@@ -162,7 +164,7 @@ class PostController {
             );
             break;
           case 3:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.2': 1 }
@@ -171,7 +173,7 @@ class PostController {
             );
             break;
           case 4:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.3': 1 }
@@ -180,7 +182,7 @@ class PostController {
             );
             break;
           case 5:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.4': 1 }
@@ -198,6 +200,10 @@ class PostController {
         });
         await rateLoc.save();
         reviewItem(req.user._id, locationId, rate);
+        let cat = [];
+        if (hashtags) cat = [...hashtags];
+        if (location) cat = [...cat, location.fullname];
+        createItem(newPost._doc._id, 'post', cat, content);
       }
     } catch (err) {
       console.log(err);
@@ -242,7 +248,10 @@ class PostController {
         });
       res.success({ success: true, message: 'update post successful', post });
 
-      updatePropsItem(req.params.id, 'post', hashtags, content);
+      let cat = [...post.hashtags];
+      if (post.locationId) cat = [...cat, post.locationId.fullname];
+
+      updatePropsItem(req.params.id, 'post', post.hashtags, post.content);
 
       if (rate && parseInt(rate) !== parseInt(oldRate)) {
         switch (parseInt(oldRate)) {
@@ -649,7 +658,7 @@ class PostController {
 
       res.deleted();
 
-      // deleteItem(req.params.id)
+      deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);

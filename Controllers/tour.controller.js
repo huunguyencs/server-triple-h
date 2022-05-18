@@ -88,12 +88,12 @@ class TourController {
         }
       });
 
-      createItem(
-        newTour._doc._id,
-        'tour',
-        [...hashtags, ...provinces, ...locations],
-        content
-      );
+      let cat = [...provinces, ...locations];
+      if (hashtags) cat = [...cat, ...hashtags];
+
+      if (isPublic) {
+        createItem(newTour._doc._id, 'tour', cat, content);
+      }
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -247,18 +247,16 @@ class TourController {
           }
         });
 
+        let cat = [...provinces, ...locations];
+        if (hashtags) cat = [...cat, ...hashtags];
+
         res.success({
           success: true,
           message: 'update tour successful',
           newTour
         });
 
-        updatePropsItem(
-          req.params.id,
-          'tour',
-          [...hashtags, ...provinces, ...locations],
-          content
-        );
+        updatePropsItem(req.params.id, 'tour', cat, content);
       } else {
         res.notFound('Không tìm thấy tour');
       }
@@ -362,7 +360,7 @@ class TourController {
         res.notFound('Không tìm thấy tour');
       }
 
-      // deleteItem(req.params.id)
+      deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -410,22 +408,12 @@ class TourController {
         isPublic: true
       };
 
-      // Tours.createIndexes()
-      // Tours.createIndexes({'$**': 'text'});
-
       const tours = await Tours.find(query, score)
         .sort(sort)
         .skip(offset * 5)
         .limit(5)
         .populate('userId joinIds likes', 'username fullname avatar')
         .populate('tour', 'date')
-        // .populate({
-        //   path: 'comments',
-        //   populate: {
-        //     path: 'userId likes',
-        //     select: 'username fullname avatar'
-        //   }
-        // })
         .populate({
           path: 'shareId',
           populate: {
