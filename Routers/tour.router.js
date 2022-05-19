@@ -12,6 +12,7 @@ router.get('/search_hot', TourController.searchTourHot);
 router.get('/hot', TourController.tourHot);
 router.get('/foryou', auth, TourController.getTourRecommend);
 router.get('/similar/:id', auth, TourController.getSimilar);
+router.get('/hashtag', TourController.getTourHashtag);
 
 router.get('/user/:id', TourController.getUserTour);
 

@@ -762,6 +762,41 @@ class PostController {
       res.error(err);
     }
   }
+
+  async getByHashtags(req, res) {
+    try {
+      let { hashtag, limit, page } = req.query;
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
+      if (!hashtag) return res.errorClient('Thiếu hashtags');
+      const posts = await Posts.find({ hashtags: hashtag })
+        .skip(page)
+        .limit(limit)
+        .populate('userId likes', 'username fullname avatar')
+        .populate('locationId', 'name fullname')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'locationId',
+            select: 'name fullname'
+          }
+        });
+
+      res.success({
+        success: true,
+        posts
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new PostController();

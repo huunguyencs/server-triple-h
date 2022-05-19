@@ -1142,6 +1142,49 @@ class TourController {
       res.error(err);
     }
   }
+
+  async getTourHashtag(req, res) {
+    try {
+      let { hashtag, limit, page } = req.query;
+      if (!hashtag) return res.errorClient('Thiếu hashtag');
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
+      const tours = await Tours.find({ hashtags: hashtag })
+        .skip(page)
+        .limit(limit)
+        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('tour', 'date')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'tour',
+            select: 'date'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'joinIds',
+            select: 'username fullname avatar'
+          }
+        });
+
+      res.success({
+        success: true,
+        tours
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new TourController();

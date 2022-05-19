@@ -14,6 +14,7 @@ router.get('/posts', auth, PostController.getPosts);
 router.get('/search', PostController.search);
 router.post('/list', PostController.postList);
 router.get('/all', auth, authRole([2]), PostController.getAll);
+router.get('/hashtag', PostController.getByHashtags);
 
 router.get('/:id', fakeAuth, PostController.getPost);
 router.put('/:id', auth, PostController.updatePost);
