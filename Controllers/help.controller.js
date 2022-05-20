@@ -4,7 +4,7 @@ const { ip2position } = require('../utils/ip2position');
 class HelpController {
   async createHelp(req, res) {
     try {
-      let { position } = req.body;
+      let { position, ip } = req.body;
 
       const today = new Date();
       let tomorrow = new Date();
