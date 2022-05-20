@@ -6,6 +6,8 @@ class HelpController {
     try {
       let { position, ip } = req.body;
 
+      console.log('CREATE HELP BODY', req.body);
+
       const today = new Date();
       let tomorrow = new Date();
       tomorrow.setDate(today.getDate() + 1);
