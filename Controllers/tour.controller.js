@@ -845,8 +845,7 @@ class TourController {
           $match: {
             createdAt: {
               $gte: THIRTY_DAY_AGO
-            },
-            isPublic: true
+            }
           }
         },
         {

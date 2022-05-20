@@ -779,11 +779,11 @@ class UserController {
     try {
       const reviews = await LocationUser.find({ user: req.user._id })
         .populate(
-          'posts',
+          'review',
           'locationId content images isPostReview rate hashtags'
         )
         .populate({
-          path: 'posts',
+          path: 'review',
           populate: {
             path: 'locationId',
             select: 'name fullname images position province'
@@ -795,6 +795,7 @@ class UserController {
         reviews
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
