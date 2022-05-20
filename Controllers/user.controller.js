@@ -762,15 +762,17 @@ class UserController {
 
   async banUser(req, res) {
     try {
-      const { status } = req.body;
+      const { state } = req.body;
+      console.log(state);
       await Users.findByIdAndUpdate(req.params.id, {
-        status
+        state
       });
       res.success({
         success: true,
         message: 'Cập nhật trạng thái thành công'
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
