@@ -24,6 +24,7 @@ class HelpController {
       const help = new Helps({
         userId: req.user._id,
         expireAt: tomorrow,
+        position,
         ...req.body
       });
       await help.save();
