@@ -6,8 +6,8 @@ const recombeeClient = new recombee.ApiClient(
   process.env.RECOMBEE_TOKEN
 );
 
-function rating(userId, itemId, rating) {
-  let i = new rqs.AddRating(userId, itemId, rating, { cascadeCreate: true });
+function rating(userId, itemId) {
+  let i = new rqs.AddRating(userId, itemId, 1, { cascadeCreate: true });
   i.timeout = 10000;
   return recombeeClient
     .send(i)
