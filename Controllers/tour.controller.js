@@ -7,7 +7,7 @@ const {
   shareItem,
   likeItem,
   unLikeItem,
-  deleteItem,
+  // deleteItem,
   joinItem,
   unJoinItem,
   viewDetailItem,
@@ -360,7 +360,7 @@ class TourController {
         res.notFound('Không tìm thấy tour');
       }
 
-      deleteItem(req.params.id);
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);

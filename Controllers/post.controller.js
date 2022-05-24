@@ -12,8 +12,8 @@ const {
   unLikeItem,
   viewDetailItem,
   getPostRecommend,
-  updatePropsItem,
-  deleteItem
+  updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -658,7 +658,7 @@ class PostController {
 
       res.deleted();
 
-      deleteItem(req.params.id);
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);

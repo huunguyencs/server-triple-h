@@ -6,8 +6,8 @@ const {
   createItem,
   viewDetailItem,
   getLocationRecommend,
-  updatePropsItem,
-  deleteItem
+  updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -100,7 +100,7 @@ class LocationController {
 
       res.deleted();
 
-      deleteItem(req.params.id);
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);
