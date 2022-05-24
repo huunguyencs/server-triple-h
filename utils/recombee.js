@@ -12,7 +12,10 @@ function rating(userId, itemId, rating) {
   return recombeeClient
     .send(i)
     .then(res => console.log('rating success'))
-    .catch(err => console.log('rating fail'));
+    .catch(err => {
+      console.log(err);
+      console.log('rating fail');
+    });
 }
 
 function cartAdd(userId, itemId) {
@@ -21,7 +24,10 @@ function cartAdd(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('cart add success'))
-    .catch(err => console.log('cart add fail'));
+    .catch(err => {
+      console.log(err);
+      console.log('cart add fail');
+    });
 }
 
 function cartRemove(userId, itemId) {
@@ -30,7 +36,10 @@ function cartRemove(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('cart remove success'))
-    .catch(err => console.log('cart remove fail'));
+    .catch(err => {
+      console.log('cart remove fail');
+      console.log(err);
+    });
 }
 
 function viewDetail(userId, itemId) {
@@ -39,7 +48,10 @@ function viewDetail(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('view detail success'))
-    .catch(err => console.log('view detail fail'));
+    .catch(err => {
+      console.log('view detail fail');
+      console.log(err);
+    });
 }
 
 function purchasesItem(userId, itemId) {
@@ -48,7 +60,10 @@ function purchasesItem(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('purchases success'))
-    .catch(err => console.log('purchases fail'));
+    .catch(err => {
+      console.log('purchases fail');
+      console.log(err);
+    });
 }
 
 function removePurchases(userId, itemId) {
@@ -66,7 +81,10 @@ function bookmark(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('bookmark success'))
-    .catch(err => console.log('bookmark fail'));
+    .catch(err => {
+      console.log('bookmark fail');
+      console.log(err);
+    });
 }
 
 function unBookmark(userId, itemId) {
@@ -75,7 +93,10 @@ function unBookmark(userId, itemId) {
   return recombeeClient
     .send(i)
     .then(res => console.log('ubookmark success'))
-    .catch(err => console.log('ubook fail'));
+    .catch(err => {
+      console.log('ubook fail');
+      console.log(err);
+    });
 }
 
 async function getRecommend(userId, count, type) {
@@ -107,7 +128,9 @@ async function getUserRecommend(userId, count) {
     minRelevance: 'low'
   });
   i.timeout = 10000;
-  return await recombeeClient.send(i);
+  return recombeeClient.send(i).catch(err => {
+    console.log(err);
+  });
 }
 
 function createItem(id, type, categories, description) {
