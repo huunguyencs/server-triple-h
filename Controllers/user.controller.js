@@ -311,6 +311,8 @@ class UserController {
         newUser
       });
 
+      const hobbies = newUser._doc.hobbies;
+
       if (hobbies?.length > 0) {
         setPrefUser(req.user._id, hobbies.split(','));
       }
