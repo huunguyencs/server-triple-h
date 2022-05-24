@@ -3,6 +3,7 @@ const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
+const LocationUser = require('../Models/locationUser.model');
 const {
   createItem,
   shareItem,
@@ -12,6 +13,7 @@ const {
   viewDetailItem,
   getPostRecommend,
   updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -45,7 +47,7 @@ class PostController {
         }
       });
 
-      createItem(newPost._doc._id, 'post', hashtags, content);
+      if (isPublic) createItem(newPost._doc._id, 'post', hashtags, content);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -93,41 +95,18 @@ class PostController {
 
   async createReview(req, res) {
     try {
-      const {
-        content,
-        images,
-        hashtags,
-        locationId,
-        rate,
-        tourDateId,
-        indexLocation
-      } = req.body;
+      const { locationId, rate, tourDateId, indexLocation, hashtags, content } =
+        req.body;
+      if (!locationId) {
+        return res.errorClient('Thiếu thông tin địa điểm');
+      }
       let isPostReview = true;
       const newPost = new Posts({
         userId: req.user._id,
-        content,
-        images,
-        hashtags,
         isPostReview,
-        locationId,
-        rate
+        ...req.body
       });
       await newPost.save();
-
-      if (tourDateId) {
-        await TourDates.findOneAndUpdate(
-          {
-            _id: tourDateId,
-            locations: { $elemMatch: { _id: indexLocation } }
-          },
-          {
-            $push: {
-              'locations.$.postId': newPost._doc._id
-            }
-          },
-          { new: true, safe: true, upsert: true }
-        );
-      }
 
       res.created({
         success: true,
@@ -143,10 +122,31 @@ class PostController {
         }
       });
 
+      const newLocationUser = new LocationUser({
+        user: req.user._id,
+        review: newPost._doc._id
+      });
+      await newLocationUser.save();
+
+      if (tourDateId) {
+        await TourDates.findOneAndUpdate(
+          {
+            _id: tourDateId,
+            locations: { $elemMatch: { _id: indexLocation } }
+          },
+          {
+            $push: {
+              'locations.$.postId': newPost._doc._id
+            }
+          },
+          { new: true, safe: true, upsert: true }
+        );
+      }
+      let location = null;
       if (rate) {
         switch (parseInt(rate)) {
           case 1:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.0': 1 }
@@ -155,7 +155,7 @@ class PostController {
             );
             break;
           case 2:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.1': 1 }
@@ -164,7 +164,7 @@ class PostController {
             );
             break;
           case 3:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.2': 1 }
@@ -173,7 +173,7 @@ class PostController {
             );
             break;
           case 4:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.3': 1 }
@@ -182,7 +182,7 @@ class PostController {
             );
             break;
           case 5:
-            await Locations.findByIdAndUpdate(
+            location = await Locations.findByIdAndUpdate(
               locationId,
               {
                 $inc: { 'star.4': 1 }
@@ -200,6 +200,10 @@ class PostController {
         });
         await rateLoc.save();
         reviewItem(req.user._id, locationId, rate);
+        let cat = [];
+        if (hashtags) cat = [...hashtags];
+        if (location) cat = [...cat, location.fullname];
+        createItem(newPost._doc._id, 'post', cat, content);
       }
     } catch (err) {
       console.log(err);
@@ -244,7 +248,10 @@ class PostController {
         });
       res.success({ success: true, message: 'update post successful', post });
 
-      updatePropsItem(req.params.id, 'post', hashtags, content);
+      let cat = [...post.hashtags];
+      if (post.locationId) cat = [...cat, post.locationId.fullname];
+
+      updatePropsItem(req.params.id, 'post', post.hashtags, post.content);
 
       if (rate && parseInt(rate) !== parseInt(oldRate)) {
         switch (parseInt(oldRate)) {
@@ -423,9 +430,8 @@ class PostController {
 
       postId = postId.map(item => item._id);
 
-      console.log(postId);
       let postRecommendId = await getPostRecommend(req.user._id, 20);
-      // console.log('RECOMMEND:', postRecommendId);
+      console.log('RECOMMEND:', postRecommendId);
       if (postRecommendId) {
         postRecommendId = postRecommendId.recomms.map(item => item.id);
         postId = postId.concat(
@@ -587,6 +593,9 @@ class PostController {
         return;
       }
       const post = await Posts.findById(req.params.id);
+
+      if (!post) return res.notFound('Không tìm thấy bài viết');
+
       await Posts.findOneAndDelete({
         _id: req.params.id,
         userId: req.user._id
@@ -646,9 +655,9 @@ class PostController {
         }
       }
 
-      res.deleted('Xoá bài viết thành công');
+      res.deleted();
 
-      // deleteItem(req.params.id)
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -744,6 +753,41 @@ class PostController {
         {},
         { _id: 1, createdAt: 1, isPostReview: 1 }
       );
+      res.success({
+        success: true,
+        posts
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getByHashtags(req, res) {
+    try {
+      let { hashtag, limit, page } = req.query;
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
+      if (!hashtag) return res.errorClient('Thiếu hashtags');
+      const posts = await Posts.find({ hashtags: hashtag })
+        .skip(page)
+        .limit(limit)
+        .populate('userId likes', 'username fullname avatar')
+        .populate('locationId', 'name fullname')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'locationId',
+            select: 'name fullname'
+          }
+        });
+
       res.success({
         success: true,
         posts

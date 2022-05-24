@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const serviceSchema = new mongoose.Schema(
   {
     name: {
-      type: String,
-      required: true
+      type: String
     },
     cooperator: {
       type: mongoose.Types.ObjectId,
@@ -51,7 +50,7 @@ const serviceSchema = new mongoose.Schema(
     //   lat: Number,
     //   lng: Number
     // },
-    position: [{ type: Number }], // lng, lat
+    position: [Number], // lng, lat
     images: [{ type: String }],
     discount: [{ type: String }]
   },

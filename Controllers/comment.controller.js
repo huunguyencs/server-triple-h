@@ -4,6 +4,8 @@ const Tours = require('../Models/tour.model');
 const Volunteers = require('../Models/volunteer.model');
 const ToursRate = require('../Models/tourRate.model');
 const { commentItem } = require('../utils/recombee');
+
+const ObjectId = require('mongoose').Types.ObjectId;
 class CommentController {
   async createComment(req, res) {
     try {
@@ -21,9 +23,7 @@ class CommentController {
         case 'post':
           const post = await Posts.findById(postId);
           if (!post) {
-            return res
-              .status(400)
-              .json({ success: false, message: 'This post is not exist.' });
+            return res.notFound('This post is not exist.');
           }
 
           await Posts.findOneAndUpdate(
@@ -39,9 +39,7 @@ class CommentController {
         case 'tour':
           const tour = await Tours.findById(tourId);
           if (!tour) {
-            return res
-              .status(400)
-              .json({ success: false, message: 'This tour is not exist.' });
+            return res.notFound('This tour is not exist.');
           }
 
           await Tours.findOneAndUpdate(
@@ -67,10 +65,7 @@ class CommentController {
         case 'volunteer':
           const volunteer = await Volunteers.findById(volunteerId);
           if (!volunteer) {
-            return res.status(400).json({
-              success: false,
-              message: 'This volunteer is not exist.'
-            });
+            return res.notFound('This volunteer is not exist.');
           }
 
           await Volunteers.findOneAndUpdate(
@@ -100,6 +95,9 @@ class CommentController {
   async getCommentPost(req, res) {
     try {
       const { id } = req.params;
+      if (!ObjectId.isValid(id)) {
+        return res.notFound('Không tìm thấy post');
+      }
       const { offset } = req.query;
       const post = await Posts.findById(id, 'comments').populate({
         path: 'comments',
@@ -122,6 +120,9 @@ class CommentController {
   async getCommentTour(req, res) {
     try {
       const { id } = req.params;
+      if (!ObjectId.isValid(id)) {
+        return res.notFound('Không tìm thấy tour');
+      }
       const { offset } = req.query;
 
       const tour = await Tours.findById(id, 'comments').populate({
@@ -145,6 +146,9 @@ class CommentController {
   async getCommentVolunteer(req, res) {
     try {
       const { id } = req.params;
+      if (!ObjectId.isValid(id)) {
+        return res.notFound('Không tìm thấy volunteer');
+      }
       const { offset } = req.query;
 
       const volunteer = await Volunteers.findById(id, 'comments').populate({
@@ -167,6 +171,9 @@ class CommentController {
 
   async updateComment(req, res) {
     try {
+      if (!ObjectId.isValid(req.params.id)) {
+        return res.notFound('Không tìm thấy bình luận');
+      }
       const { content } = req.body;
       const comment = await Comments.findOneAndUpdate(
         { _id: req.params.id, user: req.user._id },
@@ -187,21 +194,13 @@ class CommentController {
   // A(req.user._id) like comment B(params.id)
   async likeComment(req, res) {
     try {
-      const comment = await Comments.findOne({
-        _id: req.params.id,
-        likes: req.user._id
-      });
-
-      if (comment && comment.length > 0) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'You liked this comment.' });
+      if (!ObjectId.isValid(req.params.id)) {
+        return res.notFound('Không tìm thấy bình luận');
       }
-
       const newComment = await Comments.findByIdAndUpdate(
         req.params.id,
         {
-          $push: {
+          $addToSet: {
             likes: req.user._id
           }
         },
@@ -216,6 +215,9 @@ class CommentController {
   // A(req.user._id) unlike comment B(params.id)
   async unlikeComment(req, res) {
     try {
+      if (!ObjectId.isValid(req.params.id)) {
+        return res.notFound('Không tìm thấy bình luận');
+      }
       const newComment = await Comments.findByIdAndUpdate(
         req.params.id,
         {
@@ -234,6 +236,9 @@ class CommentController {
   // A(req.user._id) delete comment B(params.id)
   async deleteComment(req, res) {
     try {
+      if (!ObjectId.isValid(req.params.id)) {
+        return res.notFound('Không tìm thấy bình luận');
+      }
       const comment = await Comments.findOneAndDelete({
         _id: req.params.id,
         userId: req.user._id
@@ -264,7 +269,7 @@ class CommentController {
         default:
           break;
       }
-      res.success({ success: true, message: 'Delete comment' });
+      res.deleted();
     } catch (err) {
       res.error(err);
     }

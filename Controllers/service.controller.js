@@ -4,6 +4,7 @@ const {
   reviewItem,
   viewDetailItem,
   updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 // const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -24,6 +25,8 @@ class ServiceController {
         images,
         discount
       } = req.body;
+
+      if (req.user.role !== 1) return res.unauthorized();
 
       const newService = new Services({
         cooperator: req.user._id,
@@ -51,12 +54,12 @@ class ServiceController {
         }
       });
 
-      createItem(
-        newService._doc._id,
-        'service',
-        [attribute.conform, attribute.featured],
-        description
-      );
+      let cat = [];
+
+      if (attribute?.conform) cat = [attribute.conform];
+      if (attribute?.featured) cat = [...cat, attribute.featured];
+
+      createItem(newService._doc._id, 'service', cat, description);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -69,18 +72,33 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const { name, description, type, province, images, cost, discount } =
-        req.body;
+      const {
+        name,
+        description,
+        contact,
+        andress,
+        position,
+        type,
+        province,
+        images,
+        cost,
+        discount,
+        attribute
+      } = req.body;
 
       const service = await Services.findOneAndUpdate(
         { _id: req.params.id, cooperator: req.user._id },
         {
           name,
           description,
+          attribute,
+          contact,
           type,
           province,
-          images,
           cost,
+          andress,
+          position,
+          images,
           discount
         },
         { new: true }
@@ -92,12 +110,13 @@ class ServiceController {
         service
       });
 
-      updatePropsItem(
-        req.params.id,
-        'service',
-        [service.attribute.conform, service.attribute.featured],
-        description
-      );
+      let cat = [];
+
+      if (service.attribute?.conform) cat = [service.attribute.conform];
+      if (service.attribute?.featured)
+        cat = [...cat, service.attribute.featured];
+
+      updatePropsItem(req.params.id, 'service', cat, description);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -116,7 +135,8 @@ class ServiceController {
         cooperator: req.user._id
       });
 
-      res.deleted('Xóa dịch vụ thành công!');
+      res.deleted();
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -130,9 +150,9 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const service = await Services.findById(req.params.id).populate(
-        'cooperator'
-      );
+      const service = await Services.findById(req.params.id)
+        .populate('cooperator')
+        .populate('province', 'fullname name position');
       res.success({
         success: true,
         message: 'get info 1 Service success',
@@ -172,7 +192,7 @@ class ServiceController {
       const services = await Services.find({}, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
-        // .populate("cooperator")
+        .populate("cooperator","fullname avatar _id")
         .populate('province', 'name fullname');
       res.success({
         success: true,
@@ -194,7 +214,8 @@ class ServiceController {
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
-      ).populate('province', 'name fullname');
+      ).populate('province', 'name fullname')
+      .populate("cooperator","fullname avatar _id");
       res.success({ success: true, message: '', services });
     } catch (err) {
       res.error(err);
@@ -334,22 +355,24 @@ class ServiceController {
 
   async getTopServiceNear(req, res) {
     try {
-      const { lat, lng } = req.query;
+      let { lat, lng } = req.query;
       if (!lat || !lng || lat === 'undefined' || lng === 'undefined')
         return res.error('Thiếu dữ liệu');
 
+      lat = parseFloat(lat);
+      lng = parseFloat(lng);
+
+      console.log(lat);
+      console.log(lng);
+
       const services = await Services.aggregate([
         {
-          $match: {
-            position: {
-              $near: {
-                $geometry: {
-                  type: 'Point',
-                  coordinates: [lng, lat]
-                },
-                $maxDistance: 10 * 1000
-              }
-            }
+          $geoNear: {
+            includeLocs: 'position',
+            distanceField: 'distance',
+            near: { type: 'Point', coordinates: [lng, lat] },
+            maxDistance: 10000,
+            spherical: true
           }
         },
         {
@@ -382,6 +405,7 @@ class ServiceController {
         services
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
+const LocationUser = require('../Models/locationUser.model');
 const sendEmail = require('../utils/sendEmail');
 const {
   createUser,
@@ -87,6 +88,7 @@ class UserController {
       createUser(newUser._doc._id);
     } catch (err) {
       // return res.status(500).json({ message: err.message })
+      console.log(err);
       return res.error(err);
     }
   }
@@ -105,6 +107,8 @@ class UserController {
       const passwordValid = await bcrypt.compare(password, user.password);
       // if (!passwordValid) return res.status(400).json({ success: false, message: "Mật khẩu không đúng!" })
       if (!passwordValid) return res.errorClient('Mật khẩu không đúng!');
+
+      if (user.state) return res.errorClient('Tài khoản của bạn đã bị ban');
 
       //all Good
       //Return Token
@@ -140,8 +144,8 @@ class UserController {
       // const refresh_token = req.cookies.refreshtoken;
       const { refresh_token } = req.body;
       //refresh_token expire
-      if (!refresh_token)
-        return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
+      if (!refresh_token) return res.errorClient('Lỗi đăng nhập');
+      // return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
 
       jwt.verify(
         refresh_token,
@@ -161,7 +165,9 @@ class UserController {
               select: 'cmnd cmndFront cmndBack cmndFace state'
             });
           // if (!user) return res.status(400).json("No token");
-          if (!user) return res.errorClient('No token');
+          if (!user) return res.errorClient('Không tìm thấy tài khoản');
+
+          if (user.state) return res.errorClient('Tài khoản của bạn đã bị ban');
 
           const accessToken = createAccessToken({ id: user._id });
 
@@ -230,11 +236,10 @@ class UserController {
   async changePassword(req, res) {
     try {
       const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) return res.errorClient('');
       const user = await Users.findById(req.user._id);
       if (!user) {
-        res
-          .status(404)
-          .json({ success: false, message: 'Không tìm thấy user!' });
+        res.notFound('Không tìm thấy user!');
       }
       const passwordValid = await bcrypt.compare(oldPassword, user.password);
       if (passwordValid) {
@@ -247,7 +252,7 @@ class UserController {
           message: 'Cập nhật mật khẩu thành công!'
         });
       } else {
-        res.status(400).json({ success: false, message: 'Sai mật khẩu cũ!' });
+        res.errorClient('Sai mật khẩu cũ!');
       }
     } catch (err) {
       res.error(err);
@@ -283,50 +288,22 @@ class UserController {
   }
   async editProfile(req, res) {
     try {
-      const {
-        username,
-        fullname,
-        email,
-        phone,
-        birthday,
-        gender,
-        andress,
-        hobbies
-      } = req.body;
+      const { username } = req.body;
 
       const user = await Users.findById(req.user._id);
 
-      if (user.username !== username) {
-        const findUsername = await Users.find({ username: username });
+      if (username && user.username !== username) {
+        const findUsername = await Users.findOne({ username: username });
         if (findUsername) {
-          res
+          return res
             .status(400)
             .json({ success: false, message: 'Tên tài khoản đã tồn tại!' });
-          return;
-        }
-      }
-      if (user.email !== email) {
-        const findEmail = await Users.find({ email: email });
-        if (findEmail) {
-          res.status(400).json({ success: false, message: 'Email đã tồn tại' });
-          return;
         }
       }
 
-      const newUser = await Users.findByIdAndUpdate(
-        req.user._id,
-        {
-          username,
-          fullname,
-          email,
-          phone,
-          birthday,
-          gender,
-          andress,
-          hobbies
-        },
-        { new: true }
-      );
+      const newUser = await Users.findByIdAndUpdate(req.user._id, req.body, {
+        new: true
+      });
 
       res.success({
         success: true,
@@ -335,7 +312,7 @@ class UserController {
       });
 
       if (hobbies?.length > 0) {
-        setPrefUser(req.user._id, hobbies);
+        setPrefUser(req.user._id, hobbies.split(','));
       }
     } catch (err) {
       console.log(err);
@@ -355,10 +332,7 @@ class UserController {
             path: 'confirmAccount',
             select: 'cmnd cmndFront cmndBack cmndFace state'
           });
-        if (!user)
-          return res
-            .status(404)
-            .json({ success: false, massage: 'Người dùng không tồn tại' });
+        if (!user) return res.notFound('Người dùng không tồn tại');
         res.success({ success: true, user });
       } else {
         // res.status(404).json({ success: false, massage: "Người dùng không tồn tại" })
@@ -511,15 +485,17 @@ class UserController {
 
   async getFriendRecommend(req, res) {
     try {
-      const { limit } = req.query;
+      let { limit } = req.query;
+      limit = limit || 5;
+      limit = parseInt(limit);
       var user = await Users.findById(req.user._id, 'followings').populate(
         'followings',
         'followings'
       );
 
-      const followeds = [
+      let followeds = [
         ...user.followings.map(item => item._id.toString()),
-        user._id.toString()
+        req.user._id.toString()
       ];
 
       if (user) {
@@ -563,7 +539,7 @@ class UserController {
         return counts[b] - counts[a];
       });
 
-      if (limit) {
+      if (sorted && sorted.length > 0) {
         sorted = sorted.slice(0, limit);
         let recommend = await Users.find(
           {
@@ -580,19 +556,32 @@ class UserController {
           recommend
         });
       } else {
-        sorted = sorted.slice(0, 50);
-        let recommend = await Users.find(
+        followeds = followeds.map(item => new ObjectId(item));
+        const recommend = await Users.aggregate([
           {
-            _id: {
-              $in: sorted
+            $match: {
+              _id: {
+                $nin: followeds
+              }
             }
           },
-          'username fullname avatar'
-        );
+          {
+            $sample: {
+              size: 5
+            }
+          },
+          {
+            $project: {
+              _id: 1,
+              username: 1,
+              fullname: 1,
+              avatar: 1
+            }
+          }
+        ]);
 
         res.success({
           success: true,
-          message: `Lấy max 50 recommend`,
           recommend
         });
       }
@@ -605,7 +594,9 @@ class UserController {
   async getAll(req, res) {
     try {
       const users = await Users.find({})
-        .select('username fullname email role avatar confirmAccount createdAt ')
+        .select(
+          'username fullname email role avatar confirmAccount createdAt state'
+        )
         .populate({
           path: 'confirmAccount',
           select: 'state'
@@ -703,7 +694,7 @@ class UserController {
         return;
       }
       await Users.findByIdAndDelete(id);
-      res.deleted('Xóa user thành công');
+      res.deleted();
     } catch (err) {
       res.error(err);
     }
@@ -720,7 +711,9 @@ class UserController {
         await Users.findOneAndUpdate({ _id: id }, { role });
       }
       res.success({ success: true, message: 'Cập nhật thành công!' });
-    } catch (err) {}
+    } catch (err) {
+      res.error(err);
+    }
   }
 
   async getUserByArray(req, res) {
@@ -759,9 +752,52 @@ class UserController {
       });
 
       if (req.body?.hobbies) {
-        setPrefUser(req.user._id, req.body.hobbies);
+        setPrefUser(req.user._id, req.body.hobbies.split(','));
       }
     } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async banUser(req, res) {
+    try {
+      const { state } = req.body;
+      console.log(state);
+      await Users.findByIdAndUpdate(req.params.id, {
+        state
+      });
+      res.success({
+        success: true,
+        message: 'Cập nhật trạng thái thành công'
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getReviews(req, res) {
+    try {
+      const reviews = await LocationUser.find({ user: req.user._id })
+        .populate(
+          'review',
+          'locationId content images isPostReview rate hashtags'
+        )
+        .populate({
+          path: 'review',
+          populate: {
+            path: 'locationId',
+            select: 'name fullname images position province'
+          }
+        });
+
+      res.success({
+        success: true,
+        reviews
+      });
+    } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
