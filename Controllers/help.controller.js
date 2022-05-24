@@ -4,10 +4,13 @@ const { ip2position } = require('../utils/ip2position');
 class HelpController {
   async createHelp(req, res) {
     try {
-      let { description, position, type, positionStr, contact, ip, images } =
-        req.body;
+      let { position, ip } = req.body;
 
-      console.log(req.body);
+      console.log('CREATE HELP BODY', req.body);
+
+      const today = new Date();
+      let tomorrow = new Date();
+      tomorrow.setDate(today.getDate() + 1);
 
       console.log('HEADER CREATE HELP:', req.headers);
       if (!position) {
@@ -20,12 +23,9 @@ class HelpController {
 
       const help = new Helps({
         userId: req.user._id,
-        description,
+        expireAt: tomorrow,
         position,
-        contact,
-        type,
-        positionStr,
-        images
+        ...req.body
       });
       await help.save();
       res.created({

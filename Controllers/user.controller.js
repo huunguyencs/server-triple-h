@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
+const LocationUser = require('../Models/locationUser.model');
 const sendEmail = require('../utils/sendEmail');
 const {
   createUser,
@@ -143,8 +144,8 @@ class UserController {
       // const refresh_token = req.cookies.refreshtoken;
       const { refresh_token } = req.body;
       //refresh_token expire
-      if (!refresh_token)
-        return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
+      if (!refresh_token) return res.errorClient('Lỗi đăng nhập');
+      // return res.status(400).json({ message: 'Bạn hãy đăng nhập lại!' });
 
       jwt.verify(
         refresh_token,
@@ -164,7 +165,9 @@ class UserController {
               select: 'cmnd cmndFront cmndBack cmndFace state'
             });
           // if (!user) return res.status(400).json("No token");
-          if (!user) return res.errorClient('No token');
+          if (!user) return res.errorClient('Không tìm thấy tài khoản');
+
+          if (user.state) return res.errorClient('Tài khoản của bạn đã bị ban');
 
           const accessToken = createAccessToken({ id: user._id });
 
@@ -285,34 +288,22 @@ class UserController {
   }
   async editProfile(req, res) {
     try {
-      const { username, fullname, phone, birthday, gender, andress, hobbies } =
-        req.body;
+      const { username } = req.body;
 
       const user = await Users.findById(req.user._id);
 
-      if (user.username !== username) {
+      if (username && user.username !== username) {
         const findUsername = await Users.findOne({ username: username });
         if (findUsername) {
-          res
+          return res
             .status(400)
             .json({ success: false, message: 'Tên tài khoản đã tồn tại!' });
-          return;
         }
       }
 
-      const newUser = await Users.findByIdAndUpdate(
-        req.user._id,
-        {
-          username,
-          fullname,
-          phone,
-          birthday,
-          gender,
-          andress,
-          hobbies
-        },
-        { new: true }
-      );
+      const newUser = await Users.findByIdAndUpdate(req.user._id, req.body, {
+        new: true
+      });
 
       res.success({
         success: true,
@@ -771,15 +762,42 @@ class UserController {
 
   async banUser(req, res) {
     try {
-      const { status } = req.body;
+      const { state } = req.body;
+      console.log(state);
       await Users.findByIdAndUpdate(req.params.id, {
-        status
+        state
       });
       res.success({
         success: true,
         message: 'Cập nhật trạng thái thành công'
       });
     } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getReviews(req, res) {
+    try {
+      const reviews = await LocationUser.find({ user: req.user._id })
+        .populate(
+          'review',
+          'locationId content images isPostReview rate hashtags'
+        )
+        .populate({
+          path: 'review',
+          populate: {
+            path: 'locationId',
+            select: 'name fullname images position province'
+          }
+        });
+
+      res.success({
+        success: true,
+        reviews
+      });
+    } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

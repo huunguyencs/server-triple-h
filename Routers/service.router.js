@@ -6,10 +6,10 @@ const authRole = require('../Middlewares/authRole');
 const fakeAuth = require('../Middlewares/fakeAuth');
 
 router.post('/create', auth, authRole([1]), ServiceController.createService);
-router.get('/services', ServiceController.getServices);
+router.get('/list', ServiceController.getServices);
 router.get('/all', ServiceController.getAll);
-router.get('/get_by_coop/:id', ServiceController.getServiceByCoop);
-router.get('/get_detail/:id', fakeAuth, ServiceController.getServiceDetail);
+router.get('/coop/:id', ServiceController.getServiceByCoop);
+router.get('/rate/:id', fakeAuth, ServiceController.getServiceDetail);
 router.get('/search', ServiceController.search);
 router.get('/top_near', ServiceController.getTopServiceNear);
 

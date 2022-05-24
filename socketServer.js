@@ -17,19 +17,19 @@ const SocketServer = socket => {
           );
       }
     }
-    users.push({ id: data.id, socketId: socket.id, position: data.position});
-    console.log("usersJoin", users)
+    users.push({ id: data.id, socketId: socket.id, position: data.position });
+    console.log('usersJoin', users);
   });
 
   //disconnect
   socket.on('disconnect', () => {
     users = users.filter(user => user.socketId !== socket.id);
-    console.log("disconnect", users)
+    console.log('disconnect', users);
   });
 
   //like
   socket.on('like', data => {
-    console.log("like", users)
+    console.log('like', users);
     if (users.length > 0) {
       users.forEach(user => {
         socket.to(user.socketId).emit('likeToClient', data);
@@ -39,7 +39,7 @@ const SocketServer = socket => {
 
   // unlike
   socket.on('unlike', data => {
-    console.log("unlike", users)
+    console.log('unlike', users);
     if (users.length > 0) {
       users.forEach(user => {
         socket.to(user.socketId).emit('unlikeToClient', data);
@@ -49,7 +49,7 @@ const SocketServer = socket => {
 
   //comment Post
   socket.on('createComment', data => {
-    console.log("createComment", users)
+    console.log('createComment', users);
     if (users.length > 0) {
       users.forEach(user => {
         socket.to(user.socketId).emit('createCommentToClient', data);
@@ -59,7 +59,7 @@ const SocketServer = socket => {
 
   //Delete comment Post
   socket.on('deleteComment', data => {
-    console.log("deleteComment", users)
+    console.log('deleteComment', users);
     if (users.length > 0) {
       users.forEach(user => {
         socket.to(user.socketId).emit('deleteCommentToClient', data);
@@ -144,7 +144,7 @@ const SocketServer = socket => {
           latitude: data.position[1]
         }) < 5000
     );
-    console.log("clients",clients)
+    console.log('clients', clients);
     if (clients.length > 0) {
       clients.forEach(user => {
         socket.to(user.socketId).emit('updateHelpToClient', data);
@@ -157,6 +157,19 @@ const SocketServer = socket => {
       users.forEach(user => {
         socket.to(user.socketId).emit('deleteHelpToClient', id);
       });
+    }
+  });
+
+  socket.on('position-change', data => {
+    if (clients.length > 0) {
+      clients.map(user =>
+        user.id === data.id
+          ? {
+              ...user,
+              position: data.position
+            }
+          : user
+      );
     }
   });
 };

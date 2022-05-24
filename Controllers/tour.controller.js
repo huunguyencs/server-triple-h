@@ -7,7 +7,7 @@ const {
   shareItem,
   likeItem,
   unLikeItem,
-  deleteItem,
+  // deleteItem,
   joinItem,
   unJoinItem,
   viewDetailItem,
@@ -88,13 +88,12 @@ class TourController {
         }
       });
 
-      createItem(
-        req.user._id,
-        newTour._doc._id,
-        'tour',
-        [...hashtags, ...provinces, ...locations],
-        content
-      );
+      let cat = [...provinces, ...locations];
+      if (hashtags) cat = [...cat, ...hashtags];
+
+      if (isPublic) {
+        createItem(newTour._doc._id, 'tour', cat, content);
+      }
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -248,18 +247,16 @@ class TourController {
           }
         });
 
+        let cat = [...provinces, ...locations];
+        if (hashtags) cat = [...cat, ...hashtags];
+
         res.success({
           success: true,
           message: 'update tour successful',
           newTour
         });
 
-        updatePropsItem(
-          req.params.id,
-          'tour',
-          [...hashtags, ...provinces, ...locations],
-          content
-        );
+        updatePropsItem(req.params.id, 'tour', cat, content);
       } else {
         res.notFound('Không tìm thấy tour');
       }
@@ -363,7 +360,7 @@ class TourController {
         res.notFound('Không tìm thấy tour');
       }
 
-      // deleteItem(req.params.id)
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -411,22 +408,12 @@ class TourController {
         isPublic: true
       };
 
-      // Tours.createIndexes()
-      // Tours.createIndexes({'$**': 'text'});
-
       const tours = await Tours.find(query, score)
         .sort(sort)
         .skip(offset * 5)
         .limit(5)
         .populate('userId joinIds likes', 'username fullname avatar')
         .populate('tour', 'date')
-        // .populate({
-        //   path: 'comments',
-        //   populate: {
-        //     path: 'userId likes',
-        //     select: 'username fullname avatar'
-        //   }
-        // })
         .populate({
           path: 'shareId',
           populate: {
@@ -829,7 +816,7 @@ class TourController {
       var { q, offset } = req.query;
       offset = offset || 0;
       var tours = await Tours.find(
-        { $text: { $search: q } },
+        { $text: { $search: q }, isPublic: true },
         { score: { $meta: 'textScore' } }
       )
         .sort({ score: { $meta: 'textScore' } })
@@ -974,7 +961,8 @@ class TourController {
         const tours = await Tours.find({
           _id: {
             $in: tourRecommendId
-          }
+          },
+          isPublic: true
         })
           .populate('userId joinIds likes', 'username fullname avatar')
           .populate('tour', 'date')
@@ -1012,8 +1000,14 @@ class TourController {
 
   async getSimilar(req, res) {
     try {
-      // console.log("id",req.params.id)
-      let tourSimilar = await getSimilarTour(req.params.id);
+      let { limit } = req.query;
+      limit = parseInt(limit) || 3;
+      let tourSimilar = await getSimilarTour(
+        req.params.id,
+        req.user._id,
+        limit
+      );
+      console.log(tourSimilar);
       if (tourSimilar) {
         tourSimilar = tourSimilar.recomms.map(item => item.id);
         // console.log("tourSimilar",tourSimilar)
@@ -1024,7 +1018,7 @@ class TourController {
           // .select('name image content cost provinces locations');
           .populate('userId joinIds likes', 'username fullname avatar');
         // console.log("tours",tours)
-        res.success({
+        return res.success({
           success: true,
           tours
         });
@@ -1138,6 +1132,49 @@ class TourController {
       hot = hot.map(item => item._id.toString());
 
       tours = tours.filter(item => hot.includes(item._id.toString()));
+      res.success({
+        success: true,
+        tours
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getTourHashtag(req, res) {
+    try {
+      let { hashtag, limit, page } = req.query;
+      if (!hashtag) return res.errorClient('Thiếu hashtag');
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
+      const tours = await Tours.find({ hashtags: hashtag })
+        .skip(page)
+        .limit(limit)
+        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('tour', 'date')
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'userId',
+            select: 'username fullname avatar'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'tour',
+            select: 'date'
+          }
+        })
+        .populate({
+          path: 'shareId',
+          populate: {
+            path: 'joinIds',
+            select: 'username fullname avatar'
+          }
+        });
+
       res.success({
         success: true,
         tours

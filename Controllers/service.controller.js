@@ -4,6 +4,7 @@ const {
   reviewItem,
   viewDetailItem,
   updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 // const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -53,12 +54,12 @@ class ServiceController {
         }
       });
 
-      createItem(
-        newService._doc._id,
-        'service',
-        [attribute.conform, attribute.featured],
-        description
-      );
+      let cat = [];
+
+      if (attribute?.conform) cat = [attribute.conform];
+      if (attribute?.featured) cat = [...cat, attribute.featured];
+
+      createItem(newService._doc._id, 'service', cat, description);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -109,12 +110,13 @@ class ServiceController {
         service
       });
 
-      updatePropsItem(
-        req.params.id,
-        'service',
-        [service.attribute.conform, service.attribute.featured],
-        description
-      );
+      let cat = [];
+
+      if (service.attribute?.conform) cat = [service.attribute.conform];
+      if (service.attribute?.featured)
+        cat = [...cat, service.attribute.featured];
+
+      updatePropsItem(req.params.id, 'service', cat, description);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -134,6 +136,7 @@ class ServiceController {
       });
 
       res.deleted();
+      // deleteItem(req.params.id);
     } catch (err) {
       console.log(err);
       res.error(err);

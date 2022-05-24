@@ -7,6 +7,7 @@ const {
   viewDetailItem,
   getLocationRecommend,
   updatePropsItem
+  // deleteItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -282,6 +283,7 @@ class LocationController {
   async getRecommendLocation(req, res) {
     try {
       let locationRecommend = await getLocationRecommend(req.user._id);
+      console.log('LOCATION RECOMBEE', locationRecommend);
       if (locationRecommend) {
         locationRecommend = locationRecommend.recomms.map(item => item.id);
         const locations = await Locations.find({

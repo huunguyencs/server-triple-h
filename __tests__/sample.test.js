@@ -57,39 +57,39 @@ describe('User Endpoints', () => {
     expect(res.statusCode).toEqual(200);
   });
 
-  it('Change avatar No Auth', async () => {
-    const res = await request(app).patch('/user/change_avatar').send({
-      avatar: 'https://emblemsbf.com/img/77111.webp'
-    });
+  // it('Change avatar No Auth', async () => {
+  //   const res = await request(app).patch('/user/change_avatar').send({
+  //     avatar: 'https://emblemsbf.com/img/77111.webp'
+  //   });
 
-    expect(res.statusCode).toEqual(401);
-  });
+  //   expect(res.statusCode).toEqual(401);
+  // });
 
-  it('Change avatar', async () => {
-    const res = await request(app)
-      .patch('/user/change_avatar')
-      .send({
-        avatar: 'https://emblemsbf.com/img/77111.webp'
-      })
-      .set('Authorization', `Bearer ${access_token}`);
+  // it('Change avatar', async () => {
+  //   const res = await request(app)
+  //     .patch('/user/change_avatar')
+  //     .send({
+  //       avatar: 'https://emblemsbf.com/img/77111.webp'
+  //     })
+  //     .set('Authorization', `Bearer ${access_token}`);
 
-    expect(res.statusCode).toEqual(200);
-  });
+  //   expect(res.statusCode).toEqual(200);
+  // });
 
-  it('Change background', async () => {
-    const res = await request(app)
-      .patch('/user/change_background')
-      .send({
-        avatar: 'https://cdn.wallpapersafari.com/39/72/MF1esV.jpg'
-      })
-      .set('Authorization', `Bearer ${access_token}`);
+  // it('Change background', async () => {
+  //   const res = await request(app)
+  //     .patch('/user/change_background')
+  //     .send({
+  //       avatar: 'https://cdn.wallpapersafari.com/39/72/MF1esV.jpg'
+  //     })
+  //     .set('Authorization', `Bearer ${access_token}`);
 
-    expect(res.statusCode).toEqual(200);
-  });
+  //   expect(res.statusCode).toEqual(200);
+  // });
 
   it('Edit Profile', async () => {
     const res = await request(app)
-      .patch('/user/change_info')
+      .put('/user/change_info')
       .send({
         username: 'huuabc123',
         fullname: 'Hữu Nguyễn',
@@ -128,7 +128,7 @@ describe('User Endpoints', () => {
 
   it('Get all user', async () => {
     const res = await request(app)
-      .get('/user/all')
+      .get('/user/list')
       .send()
       .set('Authorization', `Bearer ${access_token}`);
     expect(res.statusCode).toEqual(401);
@@ -147,7 +147,7 @@ describe('User Endpoints', () => {
 
   it('Get all user', async () => {
     const res = await request(app)
-      .get('/user/all')
+      .get('/user/list')
       .send()
       .set('Authorization', `Bearer ${admin_access_token}`);
     expect(res.statusCode).toEqual(200);
@@ -167,7 +167,7 @@ describe('User Endpoints', () => {
 
   it('Get Tour Saved', async () => {
     const res = await request(app)
-      .get('/user/get_tour_saved')
+      .get('/user/tour_saved')
       .send()
       .set('Authorization', `Bearer ${access_token}`);
     expect(res.statusCode).toEqual(200);
@@ -185,7 +185,7 @@ describe('User Endpoints', () => {
 
   it('UnFollow User', async () => {
     const res = await request(app)
-      .put('/user/623c966102981f76be675a0d/unfollow')
+      .patch('/user/623c966102981f76be675a0d/unfollow')
       .send()
       .set('Authorization', `Bearer ${access_token}`);
     expect(res.statusCode).toEqual(200);
@@ -193,7 +193,7 @@ describe('User Endpoints', () => {
 
   it('Follow User', async () => {
     const res = await request(app)
-      .put('/user/623c966102981f76be675a0d/follow')
+      .patch('/user/623c966102981f76be675a0d/follow')
       .send()
       .set('Authorization', `Bearer ${access_token}`);
     expect(res.statusCode).toEqual(200);
@@ -1105,7 +1105,7 @@ describe('Service Endpoints', () => {
   });
 
   it('Get Services', async () => {
-    const res = await request(app).get('/service/services').send();
+    const res = await request(app).get('/service/list').send();
 
     expect(res.statusCode).toEqual(200);
   });
@@ -1118,7 +1118,7 @@ describe('Service Endpoints', () => {
 
   it('Get By Cooperator', async () => {
     const res = await request(app)
-      .get(`/service/get_by_coop/62504fd55133ea41f9474cf3`)
+      .get(`/service/coop/62504fd55133ea41f9474cf3`)
       .send();
 
     expect(res.statusCode).toEqual(200);
@@ -1126,7 +1126,7 @@ describe('Service Endpoints', () => {
 
   it('Get Service Detail', async () => {
     const res = await request(app)
-      .get('/service/get_detail/62577ce871077093dd4d6504')
+      .get('/service/rate/62577ce871077093dd4d6504')
       .send();
 
     expect(res.statusCode).toEqual(200);
