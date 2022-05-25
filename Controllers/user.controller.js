@@ -481,6 +481,7 @@ class UserController {
       });
       unSaveItem(req.user._id, tour);
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
