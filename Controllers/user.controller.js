@@ -469,17 +469,21 @@ class UserController {
       const user = await Users.findByIdAndUpdate(
         req.user._id,
         {
-          $pop: { tourSaved: tour }
+          $pull: { tourSaved: tour }
         },
         { new: true }
-      );
+      ).select('tourSaved');
+
+      console.log(user);
 
       res.success({
         success: true,
-        message: 'Loại khỏi danh sách thành công',
-        tourSaved: user.tourSaved
+        message: 'Loại khỏi danh sách thành công'
+        // tourSaved: user.tourSaved
       });
-      unSaveItem(req.user._id, tour);
+      try {
+        unSaveItem(req.user._id, tour);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
