@@ -366,7 +366,7 @@ class ServiceController {
       console.log(lat);
       console.log(lng);
 
-      const services = await Services.aggregate([
+      let services = await Services.aggregate([
         {
           $geoNear: {
             includeLocs: 'position',
@@ -396,11 +396,22 @@ class ServiceController {
         },
         {
           $limit: 5
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'cooperator',
+            foreignField: '_id',
+            as: 'cooperator'
+          }
         }
       ]);
 
       if (!services) return res.notFound('Không tìm thấy service');
-
+      services = services.map(item => ({
+        ...item,
+        cooperator: item.cooperator[0]
+      }));
       res.success({
         success: true,
         services
