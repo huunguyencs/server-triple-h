@@ -62,7 +62,8 @@ class PostController {
         userId: req.user._id,
         content,
         hashtags,
-        shareId
+        shareId,
+        isShare: true
       });
 
       await newPost.save();

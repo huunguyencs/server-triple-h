@@ -151,7 +151,7 @@ class ServiceController {
         return;
       }
       const service = await Services.findById(req.params.id)
-        .populate('cooperator')
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname name position');
       res.success({
         success: true,
@@ -171,7 +171,7 @@ class ServiceController {
         'name description images star type'
       )
         // .populate("cooperator")
-        .populate('cooperator', 'fullname')
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname');
       res.success({
         success: true,
@@ -192,7 +192,7 @@ class ServiceController {
       const services = await Services.find({}, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
-        // .populate("cooperator")
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'name fullname');
       res.success({
         success: true,
@@ -214,7 +214,9 @@ class ServiceController {
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
-      ).populate('province', 'name fullname');
+      )
+        .populate('province', 'name fullname')
+        .populate('cooperator', 'fullname avatar');
       res.success({ success: true, message: '', services });
     } catch (err) {
       res.error(err);
