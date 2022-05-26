@@ -100,56 +100,56 @@ class ProvinceController {
     }
   }
 
-  async getLocationsProvince(req, res) {
-    try {
-      if (!ObjectId.isValid(req.params.id)) {
-        res.notFound('Không tìm thấy tỉnh');
-        return;
-      }
-      const locations = await Locations.find({ province: req.params.id });
-      res.success({
-        success: true,
-        message: 'Success',
-        locations
-      });
-    } catch (err) {
-      res.error(err);
-    }
-  }
+  // async getLocationsProvince(req, res) {
+  //   try {
+  //     if (!ObjectId.isValid(req.params.id)) {
+  //       res.notFound('Không tìm thấy tỉnh');
+  //       return;
+  //     }
+  //     const locations = await Locations.find({ province: req.params.id });
+  //     res.success({
+  //       success: true,
+  //       message: 'Success',
+  //       locations
+  //     });
+  //   } catch (err) {
+  //     res.error(err);
+  //   }
+  // }
 
-  async getEventsProvince(req, res) {
-    try {
-      if (!ObjectId.isValid(req.params.id)) {
-        res.notFound('Không tìm thấy tỉnh');
-        return;
-      }
-      const events = await Events.find({ provinceId: req.params.id });
-      res.success({
-        success: true,
-        message: 'Success',
-        events
-      });
-    } catch (err) {
-      res.error(err);
-    }
-  }
+  // async getEventsProvince(req, res) {
+  //   try {
+  //     if (!ObjectId.isValid(req.params.id)) {
+  //       res.notFound('Không tìm thấy tỉnh');
+  //       return;
+  //     }
+  //     const events = await Events.find({ provinceId: req.params.id });
+  //     res.success({
+  //       success: true,
+  //       message: 'Success',
+  //       events
+  //     });
+  //   } catch (err) {
+  //     res.error(err);
+  //   }
+  // }
 
-  async getServicesProvince(req, res) {
-    try {
-      if (!ObjectId.isValid(req.params.id)) {
-        res.notFound('Không tìm thấy tỉnh');
-        return;
-      }
-      const services = await Services.find({ province: req.params.id });
-      res.success({
-        success: true,
-        message: 'Success',
-        services
-      });
-    } catch (err) {
-      res.error(err);
-    }
-  }
+  // async getServicesProvince(req, res) {
+  //   try {
+  //     if (!ObjectId.isValid(req.params.id)) {
+  //       res.notFound('Không tìm thấy tỉnh');
+  //       return;
+  //     }
+  //     const services = await Services.find({ province: req.params.id });
+  //     res.success({
+  //       success: true,
+  //       message: 'Success',
+  //       services
+  //     });
+  //   } catch (err) {
+  //     res.error(err);
+  //   }
+  // }
 
   //Get all province
   async getProvinces(req, res) {

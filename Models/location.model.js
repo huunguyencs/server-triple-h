@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const locationSchema = new mongoose.Schema(
   {
+    isContribute: {
+      type: Boolean,
+      default: false
+    },
     name: {
       type: String,
       required: true,
