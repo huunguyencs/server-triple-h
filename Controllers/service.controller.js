@@ -166,7 +166,7 @@ class ServiceController {
 
   async getAll(req, res) {
     try {
-      let { limit, page, province, cooperator, name } = req.query;
+      let { limit, page, province, cooperator, name, isContribute } = req.query;
       limit = parseInt(limit) || 10;
       page = parseInt(page) || 0;
 
