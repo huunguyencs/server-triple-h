@@ -9,6 +9,10 @@ const postSchema = new mongoose.Schema(
       type: Boolean,
       default: true
     },
+    isShare: {
+      type: Boolean,
+      default: false
+    },
     likes: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
     images: Array,
     isPostReview: {

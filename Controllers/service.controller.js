@@ -151,7 +151,7 @@ class ServiceController {
         return;
       }
       const service = await Services.findById(req.params.id)
-        .populate('cooperator')
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname name position');
       res.success({
         success: true,
@@ -166,12 +166,24 @@ class ServiceController {
 
   async getAll(req, res) {
     try {
+      let { limit, page, filter } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+
+      const where = {};
+
+      if (filter?.province) where.province = filter.province;
+      if (filter?.cooperator) where.contribute = filter.cooperator;
+      if (filter?.name) where.name = filter.name;
+      if (filter?.isContribute) where.isContribute = filter.isContribute;
+
       const services = await Services.find(
-        {},
+        where,
         'name description images star type'
       )
-        // .populate("cooperator")
-        .populate('cooperator', 'fullname')
+        .skip(page)
+        .limit(limit)
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname');
       res.success({
         success: true,
@@ -192,7 +204,7 @@ class ServiceController {
       const services = await Services.find({}, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
-        // .populate("cooperator")
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'name fullname');
       res.success({
         success: true,
@@ -214,7 +226,9 @@ class ServiceController {
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
-      ).populate('province', 'name fullname');
+      )
+        .populate('province', 'name fullname')
+        .populate('cooperator', 'fullname avatar');
       res.success({ success: true, message: '', services });
     } catch (err) {
       res.error(err);
@@ -364,7 +378,7 @@ class ServiceController {
       console.log(lat);
       console.log(lng);
 
-      const services = await Services.aggregate([
+      let services = await Services.aggregate([
         {
           $geoNear: {
             includeLocs: 'position',
@@ -394,11 +408,22 @@ class ServiceController {
         },
         {
           $limit: 5
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'cooperator',
+            foreignField: '_id',
+            as: 'cooperator'
+          }
         }
       ]);
 
       if (!services) return res.notFound('Không tìm thấy service');
-
+      services = services.map(item => ({
+        ...item,
+        cooperator: item.cooperator[0]
+      }));
       res.success({
         success: true,
         services
