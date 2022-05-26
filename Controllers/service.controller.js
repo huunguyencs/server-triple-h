@@ -166,22 +166,22 @@ class ServiceController {
 
   async getAll(req, res) {
     try {
-      let { limit, page, filter } = req.query;
+      let { limit, page, province, cooperator, name } = req.query;
       limit = parseInt(limit) || 10;
       page = parseInt(page) || 0;
 
       const where = {};
 
-      if (filter?.province) where.province = filter.province;
-      if (filter?.cooperator) where.contribute = filter.cooperator;
-      if (filter?.name) where.name = filter.name;
-      if (filter?.isContribute) where.isContribute = filter.isContribute;
+      if (province) where.province = province;
+      if (cooperator) where.contribute = cooperator;
+      if (name) where.name = name;
+      if (isContribute) where.isContribute = isContribute;
 
       const services = await Services.find(
         where,
         'name description images star type'
       )
-        .skip(page)
+        .skip(page * limit)
         .limit(limit)
         .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname');

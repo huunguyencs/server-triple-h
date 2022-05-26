@@ -232,17 +232,20 @@ class LocationController {
 
   async getAll(req, res) {
     try {
-      const { admin } = req.query;
-      var locations = [];
-      if (admin === 'true') {
-        locations = await Locations.find({})
-          .select('fullname name province star')
-          .populate('province', 'fullname');
-      } else {
-        locations = await Locations.find({})
-          .select('fullname name province position images')
-          .populate('province', 'fullname name');
-      }
+      let { limit, page, name, province, isContribute } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+
+      const where = {};
+      if (name) where.name = name;
+      if (province) where.province = province;
+      if (isContribute) where.isContribute = isContribute;
+
+      const locations = await Locations.find(where)
+        .skip(limit * page)
+        .limit(limit)
+        .select('fullname name province position images star')
+        .populate('province', 'fullname name');
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',

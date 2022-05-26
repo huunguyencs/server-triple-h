@@ -600,7 +600,12 @@ class UserController {
 
   async getAll(req, res) {
     try {
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
       const users = await Users.find({})
+        .skip(limit * page)
+        .limit(limit)
         .select(
           'username fullname email role avatar confirmAccount createdAt state'
         )

@@ -23,12 +23,12 @@ router.delete('/:id', auth, TourController.deleteTour);
 router.patch('/:id/like', auth, TourController.likeTour);
 router.patch('/:id/unlike', auth, TourController.unlikeTour);
 
-router.patch('/:id/join', auth, TourController.joinTour);
-router.patch('/:id/unjoin', auth, TourController.unJoinTour);
-router.patch('/:id/remove_join', auth, TourController.removeJoin);
-router.patch('/:id/join_loc', auth, TourController.joinLocation);
-router.patch('/:id/unjoin_loc', auth, TourController.unjoinLocation);
-router.patch('/:id/remove_join_loc', auth, TourController.removeJoinLocation);
+// router.patch('/:id/join', auth, TourController.joinTour);
+// router.patch('/:id/unjoin', auth, TourController.unJoinTour);
+// router.patch('/:id/remove_join', auth, TourController.removeJoin);
+// router.patch('/:id/join_loc', auth, TourController.joinLocation);
+// router.patch('/:id/unjoin_loc', auth, TourController.unjoinLocation);
+// router.patch('/:id/remove_join_loc', auth, TourController.removeJoinLocation);
 
 router.patch('/:id/remove_review', auth, TourController.removeReview);
 
