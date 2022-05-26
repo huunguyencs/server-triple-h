@@ -166,7 +166,7 @@ class ServiceController {
 
   async getAll(req, res) {
     try {
-      let { limit, page, province, cooperator, name } = req.query;
+      let { limit, page, province, cooperator, name, isContribute } = req.query;
       limit = parseInt(limit) || 10;
       page = parseInt(page) || 0;
 
@@ -175,7 +175,7 @@ class ServiceController {
       if (province) where.province = province;
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
-      if (isContribute) where.isContribute = isContribute;
+      if (isContribute) where.isContribute = isContribute === 'true';
 
       const services = await Services.find(
         where,
@@ -190,7 +190,7 @@ class ServiceController {
         message: 'get info all Service success',
         services
       });
-    } catch (error) {
+    } catch (err) {
       console.log(err);
       res.error(err);
     }
@@ -426,6 +426,45 @@ class ServiceController {
       }));
       res.success({
         success: true,
+        services
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const service = new Services({
+        ...req.body,
+        cooperator: req.user._id,
+        isContribute: true
+      });
+
+      await service.save();
+
+      res.success({
+        success: true,
+        service: {
+          ...service._doc
+        }
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      // console.log(offset);
+      const services = await Services.find({ province: id }, '-rate -attribute')
+        .populate('cooperator', 'fullname avatar')
+        .populate('province', 'name fullname');
+      res.success({
+        success: true,
+        message: 'get info all Service success',
         services
       });
     } catch (err) {

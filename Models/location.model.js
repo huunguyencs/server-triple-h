@@ -6,6 +6,7 @@ const locationSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    user: { type: mongoose.Types.ObjectId, ref: 'users' },
     name: {
       type: String,
       required: true,

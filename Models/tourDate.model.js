@@ -4,14 +4,6 @@ const tourDateSchema = new mongoose.Schema(
   {
     date: Date,
     description: String,
-    services: [
-      {
-        service: { type: mongoose.Types.ObjectId, ref: 'services' },
-        cost: Number,
-        description: String,
-        rateId: [{ type: mongoose.Types.ObjectId, ref: 'rate_services' }]
-      }
-    ],
     cost: Number,
     events: [
       {

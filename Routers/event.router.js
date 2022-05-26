@@ -7,6 +7,8 @@ const authRole = require('../Middlewares/authRole');
 router.post('/create', auth, authRole([2]), EventController.createEvent);
 router.get('/all', auth, authRole([2]), EventController.getAll);
 router.get('/search', EventController.search);
+router.get('/list', EventController.getList);
+router.get('/province/:id', EventController.getByProvince);
 
 router.get('/current', EventController.getCurrentEvent);
 router.get('/:name', EventController.getEvent);
