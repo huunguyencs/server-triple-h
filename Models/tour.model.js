@@ -9,7 +9,7 @@ const tourSchema = new mongoose.Schema(
     },
     isPublic: {
       type: Boolean,
-      default: true
+      default: false
     },
     joinIds: [
       {
