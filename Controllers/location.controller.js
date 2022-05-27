@@ -242,6 +242,7 @@ class LocationController {
       if (name) where.name = name;
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = {$ne: true}
 
       const count = await Locations.count(where)
 

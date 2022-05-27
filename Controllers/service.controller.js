@@ -171,15 +171,17 @@ class ServiceController {
       page = parseInt(page) || 0;
 
       const where = {};
-      console.log(typeof isContribute)
+      // console.log(typeof isContribute)
 
       if (province) where.province = province;
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = {$ne: true}
 
       const count = await Services.count(where)
-
+      
+      console.log(where);
       const services = await Services.find(
         where,
         'name description images star type'
