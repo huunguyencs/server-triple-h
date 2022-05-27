@@ -309,6 +309,7 @@ class LocationController {
 
   async createContribute(req, res) {
     try {
+      const { fullname, province_name, information } = req.body;
       const location = new Locations({
         ...req.body,
         name: makeID(10),
@@ -321,6 +322,13 @@ class LocationController {
         success: true,
         location: { ...location._doc }
       });
+
+      createItem(
+        location._doc._id,
+        'location',
+        [fullname, province_name],
+        information
+      );
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -330,10 +338,8 @@ class LocationController {
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
-
       const locations = await Locations.find({
-        province: id,
-        isContribute: false
+        province: id
       })
         .select('fullname name province position images star')
         .populate('province', 'fullname name');

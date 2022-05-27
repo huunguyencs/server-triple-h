@@ -436,6 +436,7 @@ class ServiceController {
 
   async createContribute(req, res) {
     try {
+      const { description, province_name, name } = req.body;
       const service = new Services({
         ...req.body,
         cooperator: req.user._id,
@@ -444,13 +445,23 @@ class ServiceController {
 
       await service.save();
 
+      // console.log(req.user);
+
       res.success({
         success: true,
         service: {
           ...service._doc
         }
       });
+
+      createItem(
+        service._doc._id,
+        'service',
+        [province_name, name],
+        description
+      );
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
