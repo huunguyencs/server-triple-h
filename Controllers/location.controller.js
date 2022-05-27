@@ -236,12 +236,14 @@ class LocationController {
       let { limit, page, name, province, isContribute } = req.query;
       limit = parseInt(limit) || 10;
       page = parseInt(page) || 0;
-      
+
       console.log('COntribute', isContribute)
       const where = {};
       if (name) where.name = name;
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+
+      const count = await Locations.count(where)
 
       const locations = await Locations.find(where)
         .skip(limit * page)

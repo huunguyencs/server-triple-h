@@ -178,6 +178,8 @@ class ServiceController {
       if (name) where.name = name;
       if (isContribute && isContribute === 'true') where.isContribute = true;
 
+      const count = await Services.count(where)
+
       const services = await Services.find(
         where,
         'name description images star type'
