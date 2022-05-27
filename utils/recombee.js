@@ -109,9 +109,8 @@ function unBookmark(userId, itemId) {
 }
 
 async function getRecommend(userId, count, type) {
-  console.log(type);
   let i = new rqs.RecommendItemsToUser(userId, count, {
-    filter: `"type" == "${type}"`,
+    filter: `'type' == "${type}"`,
     cascadeCreate: true,
     minRelevance: 'low'
   });
@@ -121,7 +120,7 @@ async function getRecommend(userId, count, type) {
 
 async function getSimilarItem(itemId, userId, count, type) {
   let i = new rqs.RecommendItemsToItem(itemId, userId, count, {
-    filter: `"type" == "${type}"`,
+    filter: `'type' == "${type}"`,
     cascadeCreate: true,
     minRelevance: 'low'
   });

@@ -311,6 +311,8 @@ class UserController {
         newUser
       });
 
+      const hobbies = newUser._doc.hobbies;
+
       if (hobbies?.length > 0) {
         setPrefUser(req.user._id, hobbies.split(','));
       }
@@ -467,18 +469,23 @@ class UserController {
       const user = await Users.findByIdAndUpdate(
         req.user._id,
         {
-          $pop: { tourSaved: tour }
+          $pull: { tourSaved: tour }
         },
         { new: true }
-      );
+      ).select('tourSaved');
+
+      console.log(user);
 
       res.success({
         success: true,
-        message: 'Loại khỏi danh sách thành công',
-        tourSaved: user.tourSaved
+        message: 'Loại khỏi danh sách thành công'
+        // tourSaved: user.tourSaved
       });
-      unSaveItem(req.user._id, tour);
+      try {
+        unSaveItem(req.user._id, tour);
+      } catch (err) {}
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
@@ -593,7 +600,12 @@ class UserController {
 
   async getAll(req, res) {
     try {
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
       const users = await Users.find({})
+        .skip(limit * page)
+        .limit(limit)
         .select(
           'username fullname email role avatar confirmAccount createdAt state'
         )

@@ -62,7 +62,8 @@ class PostController {
         userId: req.user._id,
         content,
         hashtags,
-        shareId
+        shareId,
+        isShare: true
       });
 
       await newPost.save();
@@ -428,7 +429,7 @@ class PostController {
         .limit(80)
         .sort({ createdAt: -1 });
 
-      postId = postId.map(item => item._id);
+      postId = postId.map(item => item._id.toString());
 
       let postRecommendId = await getPostRecommend(req.user._id, 20);
       console.log('RECOMMEND:', postRecommendId);
@@ -438,6 +439,8 @@ class PostController {
           postRecommendId.filter(item => postId.indexOf(item) < 0)
         );
       }
+
+      postId = [...new Set(postId)];
 
       postId = shuffle(postId);
       var currentPostId = postId.slice(0, 10);

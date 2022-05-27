@@ -2,6 +2,7 @@ const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
 const Posts = require('../Models/post.model');
 const Provinces = require('../Models/province.model');
+const { makeID } = require('../utils/crypto');
 const {
   createItem,
   viewDetailItem,
@@ -232,17 +233,20 @@ class LocationController {
 
   async getAll(req, res) {
     try {
-      const { admin } = req.query;
-      var locations = [];
-      if (admin === 'true') {
-        locations = await Locations.find({})
-          .select('fullname name province star')
-          .populate('province', 'fullname');
-      } else {
-        locations = await Locations.find({})
-          .select('fullname name province position images')
-          .populate('province', 'fullname name');
-      }
+      let { limit, page, name, province, isContribute } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+
+      const where = {};
+      if (name) where.name = name;
+      if (province) where.province = province;
+      if (isContribute) where.isContribute = isContribute === 'true';
+
+      const locations = await Locations.find(where)
+        .skip(limit * page)
+        .limit(limit)
+        .select('fullname name province position images star')
+        .populate('province', 'fullname name');
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',
@@ -283,6 +287,7 @@ class LocationController {
   async getRecommendLocation(req, res) {
     try {
       let locationRecommend = await getLocationRecommend(req.user._id);
+      console.log('LOCATION RECOMBEE', locationRecommend);
       if (locationRecommend) {
         locationRecommend = locationRecommend.recomms.map(item => item.id);
         const locations = await Locations.find({
@@ -297,6 +302,46 @@ class LocationController {
         });
       }
       res.notFound('Không tìm thấy địa điểm gợi ý');
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const location = new Locations({
+        ...req.body,
+        name: makeID(10),
+        user: req.user._id,
+        isContribute: true
+      });
+      await location.save();
+
+      res.success({
+        success: true,
+        location: { ...location._doc }
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+
+      const locations = await Locations.find({
+        province: id,
+        isContribute: false
+      })
+        .select('fullname name province position images star')
+        .populate('province', 'fullname name');
+      res.success({
+        success: true,
+        message: 'Lấy địa điểm thành công',
+        locations
+      });
     } catch (err) {
       res.error(err);
     }

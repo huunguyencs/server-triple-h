@@ -151,7 +151,7 @@ class ServiceController {
         return;
       }
       const service = await Services.findById(req.params.id)
-        .populate('cooperator')
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname name position');
       res.success({
         success: true,
@@ -166,19 +166,31 @@ class ServiceController {
 
   async getAll(req, res) {
     try {
+      let { limit, page, province, cooperator, name, isContribute } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+
+      const where = {};
+
+      if (province) where.province = province;
+      if (cooperator) where.contribute = cooperator;
+      if (name) where.name = name;
+      if (isContribute) where.isContribute = isContribute === 'true';
+
       const services = await Services.find(
-        {},
+        where,
         'name description images star type'
       )
-        // .populate("cooperator")
-        .populate('cooperator', 'fullname')
+        .skip(page * limit)
+        .limit(limit)
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'fullname');
       res.success({
         success: true,
         message: 'get info all Service success',
         services
       });
-    } catch (error) {
+    } catch (err) {
       console.log(err);
       res.error(err);
     }
@@ -192,7 +204,7 @@ class ServiceController {
       const services = await Services.find({}, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
-        .populate("cooperator","fullname avatar _id")
+        .populate('cooperator', 'fullname avatar')
         .populate('province', 'name fullname');
       res.success({
         success: true,
@@ -214,8 +226,9 @@ class ServiceController {
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
-      ).populate('province', 'name fullname')
-      .populate("cooperator","fullname avatar _id");
+      )
+        .populate('province', 'name fullname')
+        .populate('cooperator', 'fullname avatar');
       res.success({ success: true, message: '', services });
     } catch (err) {
       res.error(err);
@@ -365,7 +378,7 @@ class ServiceController {
       console.log(lat);
       console.log(lng);
 
-      const services = await Services.aggregate([
+      let services = await Services.aggregate([
         {
           $geoNear: {
             includeLocs: 'position',
@@ -395,13 +408,63 @@ class ServiceController {
         },
         {
           $limit: 5
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'cooperator',
+            foreignField: '_id',
+            as: 'cooperator'
+          }
         }
       ]);
 
       if (!services) return res.notFound('Không tìm thấy service');
+      services = services.map(item => ({
+        ...item,
+        cooperator: item.cooperator[0]
+      }));
+      res.success({
+        success: true,
+        services
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const service = new Services({
+        ...req.body,
+        cooperator: req.user._id,
+        isContribute: true
+      });
+
+      await service.save();
 
       res.success({
         success: true,
+        service: {
+          ...service._doc
+        }
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      // console.log(offset);
+      const services = await Services.find({ province: id }, '-rate -attribute')
+        .populate('cooperator', 'fullname avatar')
+        .populate('province', 'name fullname');
+      res.success({
+        success: true,
+        message: 'get info all Service success',
         services
       });
     } catch (err) {
