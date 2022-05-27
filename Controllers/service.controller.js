@@ -180,7 +180,7 @@ class ServiceController {
       if (isContribute && isContribute === 'true') where.isContribute = true;
       else where.isContribute = { $ne: true };
 
-      // const count = await Services.count(where);
+      const count = await Services.count(where);
       // console.log(count);
 
       const services = await Services.find(
@@ -206,7 +206,7 @@ class ServiceController {
   async getServices(req, res) {
     try {
       var { offset } = req.query;
-      offset = offset || 0;
+      offset = parseInt(offset) || 0;
       // console.log(offset);
       const services = await Services.find({}, '-rate -attribute')
         .skip(offset * 5)
@@ -230,10 +230,15 @@ class ServiceController {
         res.notFound('Không tìm thấy user');
         return;
       }
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
       )
+        .skip(page * limit)
+        .limit(limit)
         .populate('province', 'name fullname')
         .populate('cooperator', 'fullname avatar');
       res.success({ success: true, message: '', services });
@@ -352,7 +357,7 @@ class ServiceController {
   async search(req, res) {
     try {
       var { q, offset } = req.query;
-      offset = offset || 0;
+      offset = parseInt(offset) || 0;
       var services = await Services.find(
         { $text: { $search: q } },
         { score: { $meta: 'textScore' } }

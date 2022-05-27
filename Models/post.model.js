@@ -22,7 +22,7 @@ const postSchema = new mongoose.Schema(
     rate: Number,
     locationId: { type: mongoose.Types.ObjectId, ref: 'locations' },
     hashtags: [{ type: String }],
-    taggedIds: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
+    // taggedIds: [{ type: mongoose.Types.ObjectId, ref: 'users' }],
     shareId: { type: mongoose.Schema.Types.ObjectId, ref: 'posts' }
   },
   {
