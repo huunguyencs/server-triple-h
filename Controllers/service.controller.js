@@ -171,11 +171,12 @@ class ServiceController {
       page = parseInt(page) || 0;
 
       const where = {};
+      console.log(typeof isContribute)
 
       if (province) where.province = province;
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
-      if (isContribute) where.isContribute = isContribute;
+      if (isContribute && isContribute === 'true') where.isContribute = true;
 
       const services = await Services.find(
         where,
