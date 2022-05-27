@@ -176,13 +176,14 @@ class ServiceController {
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = { $ne: true };
 
       // const count = await Services.count(where);
       // console.log(count);
 
       const services = await Services.find(
         where,
-        'name description images star type'
+        'name description images star type isContribute'
       )
         .skip(page * limit)
         .limit(limit)

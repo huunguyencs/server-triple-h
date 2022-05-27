@@ -241,14 +241,14 @@ class LocationController {
       if (name) where.name = name;
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
-
+      else where.isContribute = { $ne: true };
       // const count = await Locations.count(where);
       // console.log(count);
 
       const locations = await Locations.find(where)
         .skip(limit * page)
         .limit(limit)
-        .select('fullname name province position images star')
+        .select('fullname name province position images star isContribute')
         .populate('province', 'fullname name');
       res.success({
         success: true,
@@ -343,7 +343,8 @@ class LocationController {
     try {
       const { id } = req.params;
       const locations = await Locations.find({
-        province: id
+        province: id,
+        isContribute: { $ne: true }
       })
         .select('fullname name province position images star')
         .populate('province', 'fullname name');
