@@ -2,6 +2,7 @@ const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
 const Posts = require('../Models/post.model');
 const Provinces = require('../Models/province.model');
+const { makeID } = require('../utils/crypto');
 const {
   createItem,
   viewDetailItem,
@@ -241,6 +242,12 @@ class LocationController {
       if (name) where.name = name;
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+<<<<<<< HEAD
+=======
+
+      // const count = await Locations.count(where);
+      // console.log(count);
+>>>>>>> 70823d4d569507ab13eafd9845cb0b437b214f1e
 
       const locations = await Locations.find(where)
         .skip(limit * page)
@@ -250,7 +257,8 @@ class LocationController {
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',
-        locations
+        locations,
+        total: count
       });
     } catch (err) {
       res.error(err);
@@ -302,6 +310,52 @@ class LocationController {
         });
       }
       res.notFound('Không tìm thấy địa điểm gợi ý');
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const { fullname, province_name, information } = req.body;
+      const location = new Locations({
+        ...req.body,
+        name: makeID(10),
+        user: req.user._id,
+        isContribute: true
+      });
+      await location.save();
+
+      res.success({
+        success: true,
+        location: { ...location._doc }
+      });
+
+      createItem(
+        location._doc._id,
+        'location',
+        [fullname, province_name],
+        information
+      );
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      const locations = await Locations.find({
+        province: id
+      })
+        .select('fullname name province position images star')
+        .populate('province', 'fullname name');
+      res.success({
+        success: true,
+        message: 'Lấy địa điểm thành công',
+        locations
+      });
     } catch (err) {
       res.error(err);
     }

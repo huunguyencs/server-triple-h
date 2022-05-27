@@ -177,6 +177,12 @@ class ServiceController {
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
       if (isContribute && isContribute === 'true') where.isContribute = true;
+<<<<<<< HEAD
+=======
+
+      // const count = await Services.count(where);
+      // console.log(count);
+>>>>>>> 70823d4d569507ab13eafd9845cb0b437b214f1e
 
       const services = await Services.find(
         where,
@@ -189,9 +195,10 @@ class ServiceController {
       res.success({
         success: true,
         message: 'get info all Service success',
-        services
+        services,
+        total: count
       });
-    } catch (error) {
+    } catch (err) {
       console.log(err);
       res.error(err);
     }
@@ -427,6 +434,56 @@ class ServiceController {
       }));
       res.success({
         success: true,
+        services
+      });
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const { description, province_name, name } = req.body;
+      const service = new Services({
+        ...req.body,
+        cooperator: req.user._id,
+        isContribute: true
+      });
+
+      await service.save();
+
+      // console.log(req.user);
+
+      res.success({
+        success: true,
+        service: {
+          ...service._doc
+        }
+      });
+
+      createItem(
+        service._doc._id,
+        'service',
+        [province_name, name],
+        description
+      );
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      // console.log(offset);
+      const services = await Services.find({ province: id }, '-rate -attribute')
+        .populate('cooperator', 'fullname avatar')
+        .populate('province', 'name fullname');
+      res.success({
+        success: true,
+        message: 'get info all Service success',
         services
       });
     } catch (err) {
