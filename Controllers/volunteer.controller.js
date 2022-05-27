@@ -7,8 +7,8 @@ const {
   joinItem,
   unJoinItem,
   viewDetailItem,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -410,7 +410,9 @@ class VolunteerController {
         success: true,
         message: 'Delete volunteer success'
       });
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);

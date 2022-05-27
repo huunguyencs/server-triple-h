@@ -7,8 +7,8 @@ const {
   createItem,
   viewDetailItem,
   getLocationRecommend,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -100,8 +100,9 @@ class LocationController {
         await Posts.deleteMany({ _id: { $in: location.posts } });
 
       res.deleted();
-
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -342,10 +343,10 @@ class LocationController {
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
-      const locations = await Locations.find({
-        province: id,
-        isContribute: { $ne: true }
-      })
+      const { isContribute } = req.query;
+      const where = { province: id };
+      if (!isContribute) where.isContribute = { $ne: true };
+      const locations = await Locations.find(where)
         .select('fullname name province position images star')
         .populate('province', 'fullname name');
       res.success({
