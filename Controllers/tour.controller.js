@@ -376,7 +376,11 @@ class TourController {
         res.notFound('Không tìm thấy tour');
       }
 
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (error) {
+        
+      } 
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -584,9 +588,9 @@ class TourController {
         .populate('userId likes', 'fullname avatar')
         .populate({
           path: 'joinIds',
-          populate: {
-            path: 'id',
-            select: 'username fullname avatar'
+          populate:{
+            path:'id',
+            select: 'fullname avatar email'
           }
         })
         .populate({
@@ -619,20 +623,13 @@ class TourController {
         return;
       }
 
-      if (tour.userId.toString() !== req.user._id.toString()) {
-        res.status(401).json({ success: false, message: 'Không được quyền' });
-        return;
-      }
-      const { users } = req.body;
-      // users:{
-      //   _id, isEdit
-      // }
       var tour = await Tours.find({
-        _id: req.params.id,
+        _id: req.params.id
       });
-
+      const users = req.body;
+      
       let usersTemp = users.map(item=>({
-        id: item._id,
+        id: item.id._id,
         isJoin: false,
         isEdit: item.isEdit
       }))
@@ -640,7 +637,9 @@ class TourController {
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
-          joinIds:[...tour.joinIds, usersTemp]
+          $push:{
+            joinIds:{$each : usersTemp}
+          }
         },
         { new: true }
       )
@@ -655,27 +654,17 @@ class TourController {
       res.success({
         success: true,
         message: 'join tour success',
-        joinIds: tour.joinIds
+        tour: tour
+
       });
-
-      // if (tour.isPublic) {
-      //   const tourRate = new ToursRate({
-      //     tour_id: req.params.id,
-      //     user_id: req.user._id,
-      //     score: 2
-      //   });
-
-      //   await tourRate.save();
-      // }
-
-      // joinItem(req.user._id, req.params.id);
+      
     } catch (err) {
       res.error(err);
     }
   }
 
 
-  async removeInviteTour(req, res) {
+  async removeMember(req, res) {
     try {
       if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy tour');
@@ -686,12 +675,12 @@ class TourController {
         res.status(401).json({ success: false, message: 'Không được quyền' });
         return;
       }
-      const { user } = req.body;
+      const id = req.body;
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
           $pull: {
-            joinIds: user
+            joinIds: { $elemMatch: { id: id } }
           }
         },
         { new: true }
@@ -707,7 +696,7 @@ class TourController {
       res.success({
         success: true,
         message: 'remove user success',
-        joinIds: tour.joinIds
+        tour: tour
       });
       // unJoinItem(user, req.params.id);
     } catch (err) {
@@ -726,15 +715,16 @@ class TourController {
         res.status(401).json({ success: false, message: 'Không được quyền' });
         return;
       }
-      const { user } = req.body;
+      const {id, isEdit} = req.body;
+      console.log("===",id, isEdit)
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
-          joinIds: {$elemMatch: {id: user._id}}
+          joinIds: {$elemMatch:{id: id}}
         },
         {
           $set: {
-            'joinIds.$.isEdit': user.isEdit,
+            'joinIds.$.isEdit': isEdit,
           }
         },
         { new: true }
@@ -791,7 +781,18 @@ class TourController {
         message: 'remove user success',
         joinIds: tour.joinIds
       });
-      
+
+      if (tour.isPublic) {
+        const tourRate = new ToursRate({
+          tour_id: req.params.id,
+          user_id: req.user._id,
+          score: 2
+        });
+
+        await tourRate.save();
+      }
+
+      joinItem(req.user._id, req.params.id);
     } catch (err) {
       res.error(err);
     }
