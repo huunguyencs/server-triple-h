@@ -240,7 +240,10 @@ class LocationController {
       const where = {};
       if (name) where.name = name;
       if (province) where.province = province;
-      if (isContribute) where.isContribute = isContribute === 'true';
+      if (isContribute && isContribute === 'true') where.isContribute = true;
+
+      // const count = await Locations.count(where);
+      // console.log(count);
 
       const locations = await Locations.find(where)
         .skip(limit * page)
@@ -250,7 +253,8 @@ class LocationController {
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',
-        locations
+        locations,
+        total: count
       });
     } catch (err) {
       res.error(err);

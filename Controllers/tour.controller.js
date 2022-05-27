@@ -247,7 +247,7 @@ class TourController {
           else {
             let newTourDate = new TourDates({
               date: element.date,
-              events: element.events,
+              events: element.events
             });
             await newTourDate.save();
             await Tours.findByIdAndUpdate(req.params.id, {
@@ -366,10 +366,11 @@ class TourController {
         if (tour.comments)
           await Comments.deleteMany({ _id: { $in: tour.comments } });
         if (tour.tour) await TourDates.deleteMany({ _id: { $in: tour.tour } });
-        if(tour.tour){
-          tour.tour.forEach(item=> async()=>{
-            if(item.comments.length >0) await Comments.deleteMany({_id: {$in: item.comments}})
-          })
+        if (tour.tour) {
+          tour.tour.forEach(item => async () => {
+            if (item.comments.length > 0)
+              await Comments.deleteMany({ _id: { $in: item.comments } });
+          });
         }
         res.deleted();
       } else {
@@ -567,7 +568,7 @@ class TourController {
             path: 'events',
             populate: {
               path: 'service',
-              select: 'name images position',
+              select: 'name images position'
             }
           }
         })
@@ -596,7 +597,7 @@ class TourController {
             select: 'fullname avatar'
           }
         });
-        
+
       res.success({
         success: true,
         message: 'get info 1 tour success',
@@ -619,39 +620,47 @@ class TourController {
         return;
       }
 
-      if (tour.userId.toString() !== req.user._id.toString()) {
-        res.status(401).json({ success: false, message: 'Không được quyền' });
-        return;
-      }
+      // if (tour.userId.toString() !== req.user._id.toString()) {
+      //   res.status(401).json({ success: false, message: 'Không được quyền' });
+      //   return;
+      // }
       const { users } = req.body;
       // users:{
       //   _id, isEdit
       // }
       var tour = await Tours.find({
         _id: req.params.id,
+        userId: req.user._id
       });
 
-      let usersTemp = users.map(item=>({
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+
+      let usersTemp = users.map(item => ({
         id: item._id,
         isJoin: false,
         isEdit: item.isEdit
-      }))
+      }));
 
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
-          joinIds:[...tour.joinIds, usersTemp]
+          $push: {
+            joinIds: { $each: usersTemp }
+          }
+          // joinIds:[...tour.joinIds, usersTemp]
         },
         { new: true }
-      )
-      .populate({
+      ).populate({
         path: 'joinIds',
         populate: {
           path: 'id',
           select: 'username fullname avatar'
         }
-      })
-      
+      });
+
       res.success({
         success: true,
         message: 'join tour success',
@@ -674,35 +683,36 @@ class TourController {
     }
   }
 
-
   async removeInviteTour(req, res) {
     try {
       if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy tour');
         return;
       }
-      let tour = await Tours.findById(req.params.id);
-      if (tour.userId.toString() !== req.user._id.toString()) {
-        res.status(401).json({ success: false, message: 'Không được quyền' });
+      let tour = await Tours.find({
+        _id: req.params.id,
+        userId: req.user._id
+      });
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
         return;
       }
-      const { user } = req.body;
+      const { id } = req.body;
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
           $pull: {
-            joinIds: user
+            joinIds: { $elemMatch: { id: id } }
           }
         },
         { new: true }
-      )
-      .populate({
+      ).populate({
         path: 'joinIds',
         populate: {
           path: 'id',
           select: 'username fullname avatar'
         }
-      })
+      });
 
       res.success({
         success: true,
@@ -730,22 +740,21 @@ class TourController {
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
-          joinIds: {$elemMatch: {id: user._id}}
+          joinIds: { $elemMatch: { id: user._id } }
         },
         {
           $set: {
-            'joinIds.$.isEdit': user.isEdit,
+            'joinIds.$.isEdit': user.isEdit
           }
         },
         { new: true }
-      )
-      .populate({
+      ).populate({
         path: 'joinIds',
         populate: {
           path: 'id',
           select: 'username fullname avatar'
         }
-      })
+      });
 
       res.success({
         success: true,
@@ -765,33 +774,31 @@ class TourController {
         return;
       }
       let tour = await Tours.findById(req.params.id);
-      
+
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
-          joinIds: {$elemMatch: {id: req.user._id}}
+          joinIds: { $elemMatch: { id: req.user._id } }
         },
         {
           $set: {
-            'joinIds.$.isEdit': true,
+            'joinIds.$.isEdit': true
           }
         },
         { new: true }
-      )
-      .populate({
+      ).populate({
         path: 'joinIds',
         populate: {
           path: 'id',
           select: 'username fullname avatar'
         }
-      })
+      });
 
       res.success({
         success: true,
         message: 'remove user success',
         joinIds: tour.joinIds
       });
-      
     } catch (err) {
       res.error(err);
     }
@@ -804,7 +811,7 @@ class TourController {
         return;
       }
       let tour = await Tours.findById(req.params.id);
-      
+
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
@@ -813,14 +820,13 @@ class TourController {
           }
         },
         { new: true }
-      )
-      .populate({
+      ).populate({
         path: 'joinIds',
         populate: {
           path: 'id',
           select: 'username fullname avatar'
         }
-      })
+      });
 
       res.success({
         success: true,
@@ -1122,7 +1128,7 @@ class TourController {
           })
           .populate({
             path: 'shareId',
-            populate:{
+            populate: {
               path: 'joinIds',
               populate: {
                 path: 'id',
@@ -1247,7 +1253,7 @@ class TourController {
         })
         .populate({
           path: 'shareId',
-          populate:{
+          populate: {
             path: 'joinIds',
             populate: {
               path: 'id',
@@ -1336,7 +1342,7 @@ class TourController {
         })
         .populate({
           path: 'shareId',
-          populate:{
+          populate: {
             path: 'joinIds',
             populate: {
               path: 'id',

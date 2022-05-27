@@ -175,7 +175,10 @@ class ServiceController {
       if (province) where.province = province;
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
-      if (isContribute) where.isContribute = isContribute === 'true';
+      if (isContribute && isContribute === 'true') where.isContribute = true;
+
+      // const count = await Services.count(where);
+      // console.log(count);
 
       const services = await Services.find(
         where,
@@ -188,7 +191,8 @@ class ServiceController {
       res.success({
         success: true,
         message: 'get info all Service success',
-        services
+        services,
+        total: count
       });
     } catch (err) {
       console.log(err);
