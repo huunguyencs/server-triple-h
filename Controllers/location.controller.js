@@ -242,12 +242,6 @@ class LocationController {
       if (name) where.name = name;
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
-<<<<<<< HEAD
-=======
-
-      // const count = await Locations.count(where);
-      // console.log(count);
->>>>>>> 70823d4d569507ab13eafd9845cb0b437b214f1e
 
       const locations = await Locations.find(where)
         .skip(limit * page)

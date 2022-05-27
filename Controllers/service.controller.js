@@ -177,12 +177,6 @@ class ServiceController {
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
       if (isContribute && isContribute === 'true') where.isContribute = true;
-<<<<<<< HEAD
-=======
-
-      // const count = await Services.count(where);
-      // console.log(count);
->>>>>>> 70823d4d569507ab13eafd9845cb0b437b214f1e
 
       const services = await Services.find(
         where,
