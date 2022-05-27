@@ -12,7 +12,7 @@ router.get('/all', ServiceController.getAll);
 router.get('/rate/:id', fakeAuth, ServiceController.getServiceDetail);
 router.get('/search', ServiceController.search);
 router.get('/top_near', ServiceController.getTopServiceNear);
-router.post('/contribute', ServiceController.createContribute);
+router.post('/contribute', auth, ServiceController.createContribute);
 router.get('/province/:id', ServiceController.getByProvince);
 router.post('/review/:id', auth, ServiceController.reviewService);
 

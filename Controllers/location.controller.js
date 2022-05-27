@@ -240,17 +240,21 @@ class LocationController {
       const where = {};
       if (name) where.name = name;
       if (province) where.province = province;
-      if (isContribute) where.isContribute = isContribute === 'true';
+      if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = { $ne: true };
+      // const count = await Locations.count(where);
+      // console.log(count);
 
       const locations = await Locations.find(where)
         .skip(limit * page)
         .limit(limit)
-        .select('fullname name province position images star')
+        .select('fullname name province position images star isContribute')
         .populate('province', 'fullname name');
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',
-        locations
+        locations,
+        total: count
       });
     } catch (err) {
       res.error(err);
@@ -309,6 +313,7 @@ class LocationController {
 
   async createContribute(req, res) {
     try {
+      const { fullname, province_name, information } = req.body;
       const location = new Locations({
         ...req.body,
         name: makeID(10),
@@ -321,6 +326,13 @@ class LocationController {
         success: true,
         location: { ...location._doc }
       });
+
+      createItem(
+        location._doc._id,
+        'location',
+        [fullname, province_name],
+        information
+      );
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -330,10 +342,9 @@ class LocationController {
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
-
       const locations = await Locations.find({
         province: id,
-        isContribute: false
+        isContribute: { $ne: true }
       })
         .select('fullname name province position images star')
         .populate('province', 'fullname name');

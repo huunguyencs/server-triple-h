@@ -175,11 +175,15 @@ class ServiceController {
       if (province) where.province = province;
       if (cooperator) where.contribute = cooperator;
       if (name) where.name = name;
-      if (isContribute) where.isContribute = isContribute === 'true';
+      if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = { $ne: true };
+
+      // const count = await Services.count(where);
+      // console.log(count);
 
       const services = await Services.find(
         where,
-        'name description images star type'
+        'name description images star type isContribute'
       )
         .skip(page * limit)
         .limit(limit)
@@ -188,7 +192,8 @@ class ServiceController {
       res.success({
         success: true,
         message: 'get info all Service success',
-        services
+        services,
+        total: count
       });
     } catch (err) {
       console.log(err);
@@ -436,6 +441,7 @@ class ServiceController {
 
   async createContribute(req, res) {
     try {
+      const { description, province_name, name } = req.body;
       const service = new Services({
         ...req.body,
         cooperator: req.user._id,
@@ -444,13 +450,23 @@ class ServiceController {
 
       await service.save();
 
+      // console.log(req.user);
+
       res.success({
         success: true,
         service: {
           ...service._doc
         }
       });
+
+      createItem(
+        service._doc._id,
+        'service',
+        [province_name, name],
+        description
+      );
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }

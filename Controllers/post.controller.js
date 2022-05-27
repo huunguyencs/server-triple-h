@@ -3,7 +3,7 @@ const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
-const LocationUser = require('../Models/locationUser.model');
+// const LocationUser = require('../Models/locationUser.model');
 const {
   createItem,
   shareItem,
@@ -123,11 +123,11 @@ class PostController {
         }
       });
 
-      const newLocationUser = new LocationUser({
-        user: req.user._id,
-        review: newPost._doc._id
-      });
-      await newLocationUser.save();
+      // const newLocationUser = new LocationUser({
+      //   user: req.user._id,
+      //   review: newPost._doc._id
+      // });
+      // await newLocationUser.save();
 
       if (tourDateId) {
         await TourDates.findOneAndUpdate(
