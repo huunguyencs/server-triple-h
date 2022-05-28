@@ -491,7 +491,7 @@ class TourController {
       const query = {
         userId: req.params.id
       };
-      if (!req.user || req.user._id !== req.params.id) {
+      if (!req.user || req.user._id.toString() !== req.params.id) {
         query.isPublic = true;
       }
       const tours = await Tours.find(query)
@@ -540,16 +540,16 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
+
       // console.log(req.params.id)
       let tour = await Tours.findById(req.params.id);
-      let requestId;
-      if (
-        !tour ||
-        (!tour.isPublic && (!req.user || req.user._id !== tour.userId))
-      ) {
-        res.status(404).json({ success: false, message: 'not found' });
-        return;
+      if (!tour) return res.notFound('Không tìm thấy tour');
+      const isInvite = tour.joinIds.map(item => item.id?.toString());
+      console.log(isInvite);
+      if (!tour.isPublic && !isInvite.includes(req.user._id.toString())) {
+        return res.notFound('Không tìm thấy tour');
       }
+      let requestId;
       if (tour.shareId) {
         requestId = tour.shareId;
       } else requestId = tour._id;
@@ -631,7 +631,7 @@ class TourController {
       const users = req.body;
 
       let usersTemp = users.map(item => ({
-        id: item._id,
+        id: item.id._id,
         isJoin: false,
         isEdit: item.isEdit
       }));
@@ -686,13 +686,13 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
-      const id = req.body;
+      const { id } = req.body;
 
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
           $pull: {
-            joinIds: { $elemMatch: { id: id } }
+            joinIds: { id: id }
           }
         },
         { new: true }
@@ -721,13 +721,15 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
-      let tour = await Tours.findById(req.params.id);
-      if (tour.userId.toString() !== req.user._id.toString()) {
-        res.status(401).json({ success: false, message: 'Không được quyền' });
+      let tour = await Tours.find({
+        _id: req.params.id,
+        userId: req.user._id
+      });
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
         return;
       }
       const { id, isEdit } = req.body;
-
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
@@ -749,8 +751,7 @@ class TourController {
 
       res.success({
         success: true,
-        message: 'remove user success',
-        joinIds: tour.joinIds
+        message: 'change user success'
       });
       // unJoinItem(user, req.params.id);
     } catch (err) {
@@ -773,7 +774,7 @@ class TourController {
         },
         {
           $set: {
-            'joinIds.$.isEdit': true
+            'joinIds.$.isJoin': true
           }
         },
         { new: true }
@@ -787,7 +788,7 @@ class TourController {
 
       res.success({
         success: true,
-        message: 'remove user success',
+        message: 'accept user success',
         joinIds: tour.joinIds
       });
 
@@ -819,7 +820,7 @@ class TourController {
         req.params.id,
         {
           $pull: {
-            joinIds: { $elemMatch: { id: req.user._id } }
+            joinIds: { id: req.user._id }
           }
         },
         { new: true }
@@ -833,7 +834,7 @@ class TourController {
 
       res.success({
         success: true,
-        message: 'remove user success',
+        message: 'unAccept success',
         joinIds: tour.joinIds
       });
       // unJoinItem(user, req.params.id);
@@ -1088,10 +1089,12 @@ class TourController {
         }
       ]);
       // console.log("tours",tours)
-      tours = tours.map(tour => ({
-        ...tour.tour,
-        userId: tour.tour.userId[0]
-      }));
+      tours = tours
+        .filter(item => item.isPublic)
+        .map(tour => ({
+          ...tour.tour,
+          userId: tour.tour.userId[0]
+        }));
 
       res.success({
         success: true,

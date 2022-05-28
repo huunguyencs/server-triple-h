@@ -14,7 +14,7 @@ router.get('/foryou', auth, TourController.getTourRecommend);
 router.get('/similar/:id', auth, TourController.getSimilar);
 router.get('/hashtag', TourController.getTourHashtag);
 
-router.get('/user/:id', TourController.getUserTour);
+router.get('/user/:id', fakeAuth, TourController.getUserTour);
 
 router.get('/:id', fakeAuth, TourController.getTour);
 router.patch('/:id', auth, TourController.updateTour);
@@ -28,7 +28,6 @@ router.patch('/:id/remove_member', auth, TourController.removeMember);
 router.patch('/:id/change_isEdit', auth, TourController.changeIsEditJoin);
 router.patch('/:id/accept', auth, TourController.acceptInviteJoin);
 router.patch('/:id/unAccept', auth, TourController.unAcceptInviteJoin);
-
 
 router.patch('/:id/remove_review', auth, TourController.removeReview);
 

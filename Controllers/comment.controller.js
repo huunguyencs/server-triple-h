@@ -4,12 +4,13 @@ const Tours = require('../Models/tour.model');
 const Volunteers = require('../Models/volunteer.model');
 const ToursRate = require('../Models/tourRate.model');
 const { commentItem } = require('../utils/recombee');
+const TourDates = require('../Models/tourDate.model');
 
 const ObjectId = require('mongoose').Types.ObjectId;
 class CommentController {
   async createComment(req, res) {
     try {
-      const { commentType, content, postId, tourId, volunteerId } = req.body;
+      const { commentType, content, postId, tourId, volunteerId, tourDateId } = req.body;
 
       const newComment = new Comments({
         userId: req.user._id,
@@ -70,6 +71,21 @@ class CommentController {
 
           await Volunteers.findOneAndUpdate(
             { _id: volunteerId },
+            {
+              $push: {
+                comments: newComment._id
+              }
+            }
+          );
+          break;
+        case 'feedback':
+          const tourDate = await TourDates.findById(tourDateId);
+          if (!tourDate) {
+            return res.notFound('This tourDate is not exist.');
+          }
+
+          await TourDates.findOneAndUpdate(
+            { _id: tourDateId },
             {
               $push: {
                 comments: newComment._id
