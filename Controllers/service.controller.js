@@ -3,8 +3,8 @@ const {
   createItem,
   reviewItem,
   viewDetailItem,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 // const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -136,7 +136,9 @@ class ServiceController {
       });
 
       res.deleted();
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
