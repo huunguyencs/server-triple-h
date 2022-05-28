@@ -3,8 +3,8 @@ const {
   createItem,
   reviewItem,
   viewDetailItem,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 // const mongoose = require('mongoose');
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -136,7 +136,9 @@ class ServiceController {
       });
 
       res.deleted();
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -179,9 +181,15 @@ class ServiceController {
       if (isContribute && isContribute === 'true') where.isContribute = true;
       else where.isContribute = { $ne: true };
 
+<<<<<<< HEAD
       const count = await Services.count(where)
       
       console.log(where);
+=======
+      const count = await Services.count(where);
+      // console.log(count);
+
+>>>>>>> 2091fba7c9116a534cd2b59f4a1f494796da1d3d
       const services = await Services.find(
         where,
         'name description images star type isContribute'
@@ -204,10 +212,12 @@ class ServiceController {
 
   async getServices(req, res) {
     try {
-      var { offset } = req.query;
-      offset = offset || 0;
+      var { offset, isContribute } = req.query;
+      offset = parseInt(offset) || 0;
+      let where = { isContribute: { $ne: true } };
+      if (isContribute && isContribute === 'true') where = {};
       // console.log(offset);
-      const services = await Services.find({}, '-rate -attribute')
+      const services = await Services.find(where, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
         .populate('cooperator', 'fullname avatar')
@@ -229,10 +239,15 @@ class ServiceController {
         res.notFound('Không tìm thấy user');
         return;
       }
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 5;
+      page = parseInt(page) || 0;
       const services = await Services.find(
         { cooperator: req.params.id },
         '-rate -attribute'
       )
+        .skip(page * limit)
+        .limit(limit)
         .populate('province', 'name fullname')
         .populate('cooperator', 'fullname avatar');
       res.success({ success: true, message: '', services });
@@ -351,7 +366,7 @@ class ServiceController {
   async search(req, res) {
     try {
       var { q, offset } = req.query;
-      offset = offset || 0;
+      offset = parseInt(offset) || 0;
       var services = await Services.find(
         { $text: { $search: q } },
         { score: { $meta: 'textScore' } }
@@ -472,6 +487,39 @@ class ServiceController {
     }
   }
 
+  async updateContribute(req, res) {
+    try {
+      const { _id } = req.body;
+      if (!_id) return res.notFound('Không tìm thấy dịch vụ');
+      const service = await Services.findOneAndUpdate(
+        {
+          _id,
+          cooperator: req.user._id,
+          isContribute: true
+        },
+        req.body,
+        { new: true }
+      );
+      if (!service) return res.notFound('Không tìm thấy dịch vụ');
+      res.success({
+        success: true,
+        service
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async deleteContribute(req, res) {
+    try {
+      const { id } = req.params;
+      await Services.findByIdAndDelete(id);
+      res.deleted();
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
@@ -486,6 +534,22 @@ class ServiceController {
       });
     } catch (err) {
       console.log(err);
+      res.error(err);
+    }
+  }
+
+  async myShare(req, res) {
+    try {
+      const services = await Services.find({
+        cooperator: req.user?._id,
+        isContribute: true
+      }).populate('province', 'name fullname');
+
+      res.success({
+        success: true,
+        services
+      });
+    } catch (err) {
       res.error(err);
     }
   }

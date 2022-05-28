@@ -8,11 +8,14 @@ const fakeAuth = require('../Middlewares/fakeAuth');
 router.post('/create', auth, authRole([1]), ServiceController.createService);
 router.get('/list', ServiceController.getServices);
 router.get('/all', ServiceController.getAll);
-// router.get('/coop/:id', ServiceController.getServiceByCoop);
+router.get('/coop/:id', ServiceController.getServiceByCoop);
 router.get('/rate/:id', fakeAuth, ServiceController.getServiceDetail);
 router.get('/search', ServiceController.search);
 router.get('/top_near', ServiceController.getTopServiceNear);
 router.post('/contribute', auth, ServiceController.createContribute);
+router.delete('/contribute/:id', auth, ServiceController.deleteContribute);
+router.put('/contribute', auth, ServiceController.updateContribute);
+router.get('/myshare', auth, ServiceController.myShare);
 router.get('/province/:id', ServiceController.getByProvince);
 router.post('/review/:id', auth, ServiceController.reviewService);
 

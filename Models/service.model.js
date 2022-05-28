@@ -44,7 +44,8 @@ const serviceSchema = new mongoose.Schema(
     },
     contact: String,
     type: {
-      type: String
+      type: String,
+      default: 'contribute'
     }, // di chuyen, nha hang, khach san,
     province: { type: mongoose.Types.ObjectId, ref: 'provinces' },
     star: {

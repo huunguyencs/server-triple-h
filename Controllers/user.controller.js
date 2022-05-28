@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
-// const LocationUser = require('../Models/locationUser.model');
+const Posts = require('../Models/post.model');
 const sendEmail = require('../utils/sendEmail');
 const {
   createUser,
@@ -793,7 +793,7 @@ class UserController {
     try {
       const reviews = await Posts.find({
         user: req.user._id,
-        isReview: true
+        isPostReview: true
       }).populate('locationId', 'name fullname images position province');
 
       res.success({
