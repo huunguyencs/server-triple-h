@@ -484,7 +484,7 @@ class TourController {
       const query = {
         userId: req.params.id
       };
-      if (!req.user || req.user._id !== req.params.id) {
+      if (!req.user || req.user._id.toString() !== req.params.id) {
         query.isPublic = true;
       }
       const tours = await Tours.find(query)
@@ -533,16 +533,16 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
+
       // console.log(req.params.id)
       let tour = await Tours.findById(req.params.id);
-      let requestId;
-      if (
-        !tour ||
-        (!tour.isPublic && (!req.user || req.user._id !== tour.userId))
-      ) {
-        res.status(404).json({ success: false, message: 'not found' });
-        return;
+      if (!tour) return res.notFound('Không tìm thấy tour');
+      const isInvite = tour.joinIds.map(item => item.id?.toString());
+      console.log(isInvite);
+      if (!tour.isPublic && !isInvite.includes(req.user._id.toString())) {
+        return res.notFound('Không tìm thấy tour');
       }
+      let requestId;
       if (tour.shareId) {
         requestId = tour.shareId;
       } else requestId = tour._id;
@@ -679,13 +679,13 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
-      const {id} = req.body;
-      
+      const { id } = req.body;
+
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
           $pull: {
-            joinIds: {id: id }
+            joinIds: { id: id }
           }
         },
         { new: true }
@@ -722,7 +722,7 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
-      const {id, isEdit} = req.body;
+      const { id, isEdit } = req.body;
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
@@ -813,7 +813,7 @@ class TourController {
         req.params.id,
         {
           $pull: {
-            joinIds: {id: req.user._id }
+            joinIds: { id: req.user._id }
           }
         },
         { new: true }
@@ -1082,10 +1082,12 @@ class TourController {
         }
       ]);
       // console.log("tours",tours)
-      tours = tours.map(tour => ({
-        ...tour.tour,
-        userId: tour.tour.userId[0]
-      }));
+      tours = tours
+        .filter(item => item.isPublic)
+        .map(tour => ({
+          ...tour.tour,
+          userId: tour.tour.userId[0]
+        }));
 
       res.success({
         success: true,
