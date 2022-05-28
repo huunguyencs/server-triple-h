@@ -205,10 +205,12 @@ class ServiceController {
 
   async getServices(req, res) {
     try {
-      var { offset } = req.query;
+      var { offset, isContribute } = req.query;
       offset = parseInt(offset) || 0;
+      let where = { isContribute: { $ne: true } };
+      if (isContribute && isContribute === 'true') where = {};
       // console.log(offset);
-      const services = await Services.find({}, '-rate -attribute')
+      const services = await Services.find(where, '-rate -attribute')
         .skip(offset * 5)
         .limit(5)
         .populate('cooperator', 'fullname avatar')

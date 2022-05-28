@@ -173,8 +173,15 @@ class TourController {
         locations
       } = req.body;
 
+      const findTour = await Tours.findById(req.params.id);
+      const edits = findTour.joinIds
+        .filter(item => item.isEdit)
+        .map(item => item.id);
+      if (!edits.includes(req.user._id.toString()))
+        return res.errorClient('Không có quyền');
+
       const newTour = await Tours.findOneAndUpdate(
-        { _id: req.params.id, userId: req.user._id },
+        { _id: req.params.id },
         {
           content,
           image,
