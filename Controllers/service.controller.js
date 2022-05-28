@@ -181,15 +181,9 @@ class ServiceController {
       if (isContribute && isContribute === 'true') where.isContribute = true;
       else where.isContribute = { $ne: true };
 
-<<<<<<< HEAD
-      const count = await Services.count(where)
-      
-      console.log(where);
-=======
       const count = await Services.count(where);
       // console.log(count);
 
->>>>>>> 2091fba7c9116a534cd2b59f4a1f494796da1d3d
       const services = await Services.find(
         where,
         'name description images star type isContribute'
