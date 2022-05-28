@@ -586,8 +586,8 @@ class TourController {
         .populate('userId likes', 'fullname avatar')
         .populate({
           path: 'joinIds',
-          populate:{
-            path:'id',
+          populate: {
+            path: 'id',
             select: 'fullname avatar email'
           }
         })
@@ -622,13 +622,13 @@ class TourController {
       }
 
       const users = req.body;
-      
+
       let usersTemp = users.map(item => ({
         id: item.id._id,
         isJoin: false,
         isEdit: item.isEdit
       }));
-     
+
       var tour = await Tours.find({
         _id: req.params.id,
         userId: req.user._id
@@ -642,8 +642,8 @@ class TourController {
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
-          $push:{
-            joinIds:{$each : usersTemp}
+          $push: {
+            joinIds: { $each: usersTemp }
           }
         },
         { new: true }
@@ -659,14 +659,11 @@ class TourController {
         success: true,
         message: 'join tour success',
         tour: tour
-
       });
-      
     } catch (err) {
       res.error(err);
     }
   }
-
 
   async removeMember(req, res) {
     try {
@@ -725,18 +722,15 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
-
       const {id, isEdit} = req.body;
-      console.log("dataa", id,"+",isEdit)
-      
       tour = await Tours.findOneAndUpdate(
         {
           _id: req.params.id,
-          joinIds: {$elemMatch:{id: id}}
+          joinIds: { $elemMatch: { id: id } }
         },
         {
           $set: {
-            'joinIds.$.isEdit': isEdit,
+            'joinIds.$.isEdit': isEdit
           }
         },
         { new: true }

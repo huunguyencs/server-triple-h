@@ -243,7 +243,7 @@ class LocationController {
       if (province) where.province = province;
       if (isContribute && isContribute === 'true') where.isContribute = true;
       else where.isContribute = { $ne: true };
-      // const count = await Locations.count(where);
+      const count = await Locations.count(where);
       // console.log(count);
 
       const locations = await Locations.find(where)
@@ -258,6 +258,7 @@ class LocationController {
         total: count
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
