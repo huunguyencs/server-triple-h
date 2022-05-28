@@ -478,6 +478,39 @@ class ServiceController {
     }
   }
 
+  async updateContribute(req, res) {
+    try {
+      const { _id } = req.body;
+      if (!_id) return res.notFound('Không tìm thấy dịch vụ');
+      const service = await Services.findOneAndUpdate(
+        {
+          _id,
+          cooperator: req.user._id,
+          isContribute: true
+        },
+        req.body,
+        { new: true }
+      );
+      if (!service) return res.notFound('Không tìm thấy dịch vụ');
+      res.success({
+        success: true,
+        service
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async deleteContribute(req, res) {
+    try {
+      const { id } = req.params;
+      await Services.findByIdAndDelete(id);
+      res.deleted();
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
@@ -492,6 +525,22 @@ class ServiceController {
       });
     } catch (err) {
       console.log(err);
+      res.error(err);
+    }
+  }
+
+  async myShare(req, res) {
+    try {
+      const services = await Services.find({
+        cooperator: req.user?._id,
+        isContribute: true
+      }).populate('province', 'name fullname');
+
+      res.success({
+        success: true,
+        services
+      });
+    } catch (err) {
       res.error(err);
     }
   }

@@ -341,6 +341,40 @@ class LocationController {
     }
   }
 
+  async updateContribute(req, res) {
+    try {
+      const { _id } = req.body;
+      if (!_id) return res.notFound('Không tìm thấy địa điểm');
+      const location = await Locations.findOneAndUpdate(
+        {
+          _id,
+          user: req.user._id,
+          isContribute: true
+        },
+        req.body,
+        { new: true }
+      );
+
+      if (!location) res.notFound('Không tìm thấy địa điểm');
+      res.success({
+        success: true,
+        location
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async deleteContribute(req, res) {
+    try {
+      const { id } = req.params;
+      await Locations.findByIdAndDelete(id);
+      res.deleted();
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
   async getByProvince(req, res) {
     try {
       const { id } = req.params;
@@ -353,6 +387,21 @@ class LocationController {
       res.success({
         success: true,
         message: 'Lấy địa điểm thành công',
+        locations
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async myShare(req, res) {
+    try {
+      const locations = await Locations.find({
+        user: req.user?._id,
+        isContribute: true
+      }).populate('province', 'fullname name');
+      res.success({
+        success: true,
         locations
       });
     } catch (err) {

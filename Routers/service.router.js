@@ -13,6 +13,9 @@ router.get('/rate/:id', fakeAuth, ServiceController.getServiceDetail);
 router.get('/search', ServiceController.search);
 router.get('/top_near', ServiceController.getTopServiceNear);
 router.post('/contribute', auth, ServiceController.createContribute);
+router.delete('/contribute/:id', auth, ServiceController.deleteContribute);
+router.put('/contribute', auth, ServiceController.updateContribute);
+router.get('/myshare', auth, ServiceController.myShare);
 router.get('/province/:id', ServiceController.getByProvince);
 router.post('/review/:id', auth, ServiceController.reviewService);
 
