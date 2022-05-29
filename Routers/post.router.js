@@ -6,7 +6,7 @@ const authRole = require('../Middlewares/authRole');
 const fakeAuth = require('../Middlewares/fakeAuth');
 
 router.get('/user/:id', PostController.getUserPost); //bug
-
+router.get('/admin', auth, authRole([2]), PostController.getByAdmin);
 router.post('/create_post', auth, PostController.createPost);
 router.post('/create_review', auth, PostController.createReview);
 router.post('/share', auth, PostController.sharePost);

@@ -800,6 +800,18 @@ class PostController {
       res.error(err);
     }
   }
+
+  async getByAdmin(req, res) {
+    try {
+      const posts = await Posts.find({}).select('_id createdAt');
+      res.success({
+        success: true,
+        posts
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new PostController();

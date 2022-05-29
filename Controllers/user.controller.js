@@ -805,6 +805,18 @@ class UserController {
       res.error(err);
     }
   }
+
+  async getByAdmin(req, res) {
+    try {
+      const users = await Users.find({}).select('_id createdAt');
+      res.success({
+        success: true,
+        users
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 function validateEmail(email) {
   const re =

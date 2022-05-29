@@ -1370,6 +1370,18 @@ class TourController {
       res.error(err);
     }
   }
+
+  async getByAdmin(req, res) {
+    try {
+      const tours = await Tours.find({}).select('_id createdAt');
+      res.success({
+        success: true,
+        tours
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new TourController();

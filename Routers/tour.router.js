@@ -13,6 +13,7 @@ router.get('/hot', TourController.tourHot);
 router.get('/foryou', auth, TourController.getTourRecommend);
 router.get('/similar/:id', auth, TourController.getSimilar);
 router.get('/hashtag', TourController.getTourHashtag);
+router.get('/admin', auth, authRole([2]), TourController.getByAdmin);
 
 router.get('/user/:id', fakeAuth, TourController.getUserTour);
 

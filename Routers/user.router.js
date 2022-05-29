@@ -17,6 +17,7 @@ router.post('/reset_password', auth, UserController.resetPassword);
 router.put('/change_info', auth, UserController.editProfile);
 router.patch('/change_password', auth, UserController.changePassword);
 router.patch('/change_new', auth, UserController.changeNew);
+router.get('/admin', auth, authRole([2]), UserController.getByAdmin);
 
 router.get('/list', auth, authRole([2]), UserController.getAll);
 router.get('/search', UserController.search);
