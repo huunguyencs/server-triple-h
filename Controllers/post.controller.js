@@ -96,7 +96,7 @@ class PostController {
 
   async createReview(req, res) {
     try {
-      const { locationId, rate, tourDateId, indexLocation, hashtags, content } =
+      const { locationId, rate, tourDateId, eventId, hashtags, content } =
         req.body;
       if (!locationId) {
         return res.errorClient('Thiếu thông tin địa điểm');
@@ -133,11 +133,11 @@ class PostController {
         await TourDates.findOneAndUpdate(
           {
             _id: tourDateId,
-            locations: { $elemMatch: { _id: indexLocation } }
+            events: { $elemMatch: { _id: eventId } }
           },
           {
             $push: {
-              'locations.$.postId': newPost._doc._id
+              'events.$.reviewIds': newPost._doc._id
             }
           },
           { new: true, safe: true, upsert: true }

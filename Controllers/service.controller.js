@@ -1,4 +1,5 @@
 const Services = require('../Models/service.model');
+const ServiceRates = require('../Models/serviceRate.model');
 const {
   createItem,
   reviewItem,
@@ -6,7 +7,7 @@ const {
   updatePropsItem,
   deleteItem
 } = require('../utils/recombee');
-// const mongoose = require('mongoose');
+const TourDates = require('../Models/tourDate.model');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class ServiceController {
@@ -211,7 +212,7 @@ class ServiceController {
       let where = { isContribute: { $ne: true } };
       if (isContribute && isContribute === 'true') where = {};
       // console.log(offset);
-      const services = await Services.find(where, '-rate -attribute')
+      const services = await Services.find(where)
         .skip(offset * 5)
         .limit(5)
         .populate('cooperator', 'fullname avatar')
@@ -236,10 +237,7 @@ class ServiceController {
       let { limit, page } = req.query;
       limit = parseInt(limit) || 5;
       page = parseInt(page) || 0;
-      const services = await Services.find(
-        { cooperator: req.params.id },
-        '-rate -attribute'
-      )
+      const services = await Services.find({ cooperator: req.params.id })
         .skip(page * limit)
         .limit(limit)
         .populate('province', 'name fullname')
@@ -250,27 +248,27 @@ class ServiceController {
     }
   }
 
-  async getServiceDetail(req, res) {
+  async getServiceRate(req, res) {
     try {
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
       if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const service = await Services.findById(
-        req.params.id,
-        'rate attribute'
-      ).populate({
-        path: 'rate',
-        populate: {
-          path: 'userId',
-          select: 'name fullname avatar'
-        }
-      });
+      const count = await ServiceRates.count({ service: req.params.id });
+      const rates = await ServiceRates.find({
+        service: req.params.id
+      })
+        .skip(limit * page)
+        .limit(limit)
+        .populate('userId', 'fullname avatar');
       res.success({
         success: true,
         message: '',
-        rate: service.rate,
-        attribute: service.attribute
+        rates,
+        count
       });
 
       if (req.user && req.user._id !== 0) {
@@ -287,16 +285,16 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const { rate, content, images } = req.body;
-      await Services.findByIdAndUpdate(
-        req.params.id,
-        {
-          $push: {
-            rate: { rate, content, userId: req.user._id, images }
-          }
-        },
-        { new: true }
-      );
+      const { rate, content, images, tourDateId, eventId } = req.body;
+      const newRate = await ServiceRates({
+        userId: req.user._id,
+        rate,
+        content,
+        images,
+        service: req.params.id
+      });
+
+      await newRate.save();
 
       var service;
 
@@ -348,9 +346,24 @@ class ServiceController {
           break;
       }
 
-      res.success({ success: true, message: '', star: service.star });
+      if (tourDateId) {
+        await TourDates.findOneAndUpdate(
+          {
+            _id: tourDateId,
+            events: { $elemMatch: { _id: eventId } }
+          },
+          {
+            $push: {
+              'events.$.rateIds': newRate._doc._id
+            }
+          },
+          { new: true, safe: true, upsert: true }
+        );
+      }
 
-      reviewItem(req.user._id, req.params.id);
+      res.success({ success: true, message: '', star: service.star, newRate });
+
+      reviewItem(req.user._id, req.params.id, rate);
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -518,7 +531,7 @@ class ServiceController {
     try {
       const { id } = req.params;
       // console.log(offset);
-      const services = await Services.find({ province: id }, '-rate -attribute')
+      const services = await Services.find({ province: id })
         .populate('cooperator', 'fullname avatar')
         .populate('province', 'name fullname');
       res.success({
@@ -542,6 +555,27 @@ class ServiceController {
       res.success({
         success: true,
         services
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getListReview(req, res) {
+    try {
+      const { list } = req.body;
+      if (!list?.length) return res.errorClient();
+      const reviews = await ServiceRates.find({
+        _id: {
+          $in: list
+        }
+      })
+        .populate('userId', 'avatar fullname name')
+        .populate('service', 'name image');
+
+      res.success({
+        success: true,
+        reviews
       });
     } catch (err) {
       res.error(err);

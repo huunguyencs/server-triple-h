@@ -1,17 +1,5 @@
 const mongoose = require('mongoose');
 
-const rateService = new mongoose.Schema(
-  {
-    userId: { type: mongoose.Types.ObjectId, ref: 'users' },
-    rate: Number,
-    content: String,
-    images: [String]
-  },
-  {
-    timestamps: true
-  }
-);
-
 const serviceSchema = new mongoose.Schema(
   {
     isContribute: {
@@ -52,13 +40,8 @@ const serviceSchema = new mongoose.Schema(
       type: [Number],
       default: [0, 0, 0, 0, 0]
     },
-    rate: [{ type: mongoose.Types.ObjectId, ref: 'rate_services' }],
     cost: String,
     andress: String,
-    // position: {
-    //   lat: Number,
-    //   lng: Number
-    // },
     position: [Number], // lng, lat
     images: [{ type: String }],
     discount: [{ type: String }]
@@ -93,5 +76,4 @@ serviceSchema.index(
   }
 );
 
-module.exports = mongoose.model('rate_services', rateService);
 module.exports = mongoose.model('services', serviceSchema);

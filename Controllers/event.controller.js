@@ -251,7 +251,7 @@ class EventController {
     try {
       const { id } = req.params;
       const events = await Events.find({ provinceId: id, isContribute: false })
-        .select('name fullname time provinceId calendarType')
+        .select('name fullname time provinceId calendarType images')
         .populate('provinceId', 'fullname');
 
       res.success({
