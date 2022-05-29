@@ -18,7 +18,7 @@ router.put('/contribute', auth, ServiceController.updateContribute);
 router.get('/myshare', auth, ServiceController.myShare);
 router.get('/province/:id', ServiceController.getByProvince);
 router.post('/review/:id', auth, ServiceController.reviewService);
-router.post('/list_review', auth, ServiceController.getListReview);
+router.post('/list_review', ServiceController.getListReview);
 
 router.get('/:id', ServiceController.getService);
 router.put('/:id', auth, authRole([1]), ServiceController.updateService);

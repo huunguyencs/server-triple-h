@@ -176,7 +176,7 @@ class TourController {
       const findTour = await Tours.findById(req.params.id);
       const edits = findTour.joinIds
         .filter(item => item.isEdit)
-        .map(item => item.id);
+        .map(item => item.id.toString());
       if (!edits.includes(req.user._id.toString()))
         return res.errorClient('Không có quyền');
 
