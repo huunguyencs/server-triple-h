@@ -345,6 +345,8 @@ class ServiceController {
           break;
       }
 
+      res.success({ success: true, message: '', star: service.star, newRate });
+
       if (tourDateId) {
         await TourDates.findOneAndUpdate(
           {
@@ -359,8 +361,6 @@ class ServiceController {
           { new: true, safe: true, upsert: true }
         );
       }
-
-      res.success({ success: true, message: '', star: service.star, newRate });
 
       reviewItem(req.user._id, req.params.id, rate);
     } catch (err) {
