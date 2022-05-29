@@ -3,6 +3,7 @@ const router = express.Router();
 const TourController = require('../Controllers/tour.controller');
 const auth = require('../Middlewares/auth');
 const fakeAuth = require('../Middlewares/fakeAuth');
+const authRole = require('../Middlewares/authRole');
 
 router.post('/create', auth, TourController.createTour);
 router.post('/share', auth, TourController.shareTour);

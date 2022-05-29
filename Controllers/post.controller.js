@@ -803,7 +803,7 @@ class PostController {
 
   async getByAdmin(req, res) {
     try {
-      const posts = await Posts.find({}).select('_id createdAt');
+      const posts = await Posts.find({}).select('_id createdAt isPostReview');
       res.success({
         success: true,
         posts
