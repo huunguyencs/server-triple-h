@@ -559,6 +559,26 @@ class ServiceController {
       res.error(err);
     }
   }
+
+  async getListReview(req, res) {
+    try {
+      const { list } = req.body;
+      const reviews = await ServiceRates.find({
+        _id: {
+          $in: list
+        }
+      })
+        .populate('userId', 'avatar fullname name')
+        .populate('service', 'name image');
+
+      res.success({
+        success: true,
+        reviews
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new ServiceController();
