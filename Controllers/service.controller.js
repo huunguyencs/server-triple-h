@@ -7,7 +7,7 @@ const {
   updatePropsItem,
   deleteItem
 } = require('../utils/recombee');
-// const mongoose = require('mongoose');
+const TourDates = require('../Models/tourDate.model');
 const ObjectId = require('mongoose').Types.ObjectId;
 
 class ServiceController {
@@ -284,7 +284,7 @@ class ServiceController {
         res.notFound('Không tìm thấy dịch vụ');
         return;
       }
-      const { rate, content, images } = req.body;
+      const { rate, content, images, tourDateId, eventId } = req.body;
       const newRate = await ServiceRates({
         userId: req.user._id,
         rate,
@@ -343,6 +343,21 @@ class ServiceController {
             { new: true }
           );
           break;
+      }
+
+      if (tourDateId) {
+        await TourDates.findOneAndUpdate(
+          {
+            _id: tourDateId,
+            events: { $elemMatch: { _id: eventId } }
+          },
+          {
+            $push: {
+              'events.$.rateIds': newRate._doc._id
+            }
+          },
+          { new: true, safe: true, upsert: true }
+        );
       }
 
       res.success({ success: true, message: '', star: service.star, newRate });
