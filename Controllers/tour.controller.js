@@ -576,7 +576,11 @@ class TourController {
             path: 'events',
             populate: {
               path: 'service',
-              select: 'name images position'
+              select: 'name images position',
+              populate: {
+                path: 'province',
+                select: 'name fullname'
+              }
             }
           }
         })
