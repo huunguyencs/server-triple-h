@@ -7,7 +7,7 @@ const {
   shareItem,
   likeItem,
   unLikeItem,
-  // deleteItem,
+  deleteItem,
   joinItem,
   unJoinItem,
   viewDetailItem,
@@ -34,7 +34,13 @@ class TourController {
         isPublic
       } = req.body;
 
-      const joinIds = [req.user._id];
+      const joinIds = [
+        {
+          id: req.user._id,
+          isJoin: true,
+          isEdit: true
+        }
+      ];
 
       const newTour = new Tours({
         userId: req.user._id,
@@ -57,10 +63,10 @@ class TourController {
         tour.forEach(async function (element) {
           const newTourDate = new TourDates({
             date: element.date,
-            locations: element.locations,
+            events: element.events,
             description: element.description,
             cost: element.cost,
-            services: element.services
+            comments: []
           });
           await newTourDate.save();
           await Tours.findOneAndUpdate(
@@ -161,29 +167,41 @@ class TourController {
         isPublic,
         image,
         hashtags,
-        services,
         tour,
         cost,
         provinces,
         locations
       } = req.body;
 
+      const findTour = await Tours.findById(req.params.id);
+      const edits = findTour.joinIds
+        .filter(item => item.isEdit)
+        .map(item => item.id.toString());
+      if (!edits.includes(req.user._id.toString()))
+        return res.errorClient('Không có quyền');
+
       const newTour = await Tours.findOneAndUpdate(
-        { _id: req.params.id, userId: req.user._id },
+        { _id: req.params.id },
         {
           content,
           image,
           name,
           hashtags,
           isPublic,
-          services,
           cost,
           provinces,
           locations
         },
         { new: true }
       )
-        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('userId likes', 'username fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'username fullname avatar'
+          }
+        })
         .populate('tour', 'date')
         .populate({
           path: 'comments',
@@ -228,7 +246,7 @@ class TourController {
               element._id,
               {
                 date: element.date,
-                locations: element.locations,
+                events: element.events,
                 description: element.description
               },
               { new: true }
@@ -236,7 +254,7 @@ class TourController {
           else {
             let newTourDate = new TourDates({
               date: element.date,
-              locations: element.locations
+              events: element.events
             });
             await newTourDate.save();
             await Tours.findByIdAndUpdate(req.params.id, {
@@ -355,12 +373,19 @@ class TourController {
         if (tour.comments)
           await Comments.deleteMany({ _id: { $in: tour.comments } });
         if (tour.tour) await TourDates.deleteMany({ _id: { $in: tour.tour } });
+        if (tour.tour) {
+          tour.tour.forEach(item => async () => {
+            if (item.comments.length > 0)
+              await Comments.deleteMany({ _id: { $in: item.comments } });
+          });
+        }
         res.deleted();
       } else {
         res.notFound('Không tìm thấy tour');
       }
-
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -412,7 +437,14 @@ class TourController {
         .sort(sort)
         .skip(offset * 5)
         .limit(5)
-        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('userId likes', 'username fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'username fullname avatar'
+          }
+        })
         .populate('tour', 'date')
         .populate({
           path: 'shareId',
@@ -432,7 +464,10 @@ class TourController {
           path: 'shareId',
           populate: {
             path: 'joinIds',
-            select: 'username fullname avatar'
+            populate: {
+              path: 'id',
+              select: 'username fullname avatar'
+            }
           }
         });
 
@@ -456,14 +491,21 @@ class TourController {
       const query = {
         userId: req.params.id
       };
-      if (!req.user || req.user._id !== req.params.id) {
+      if (!req.user || req.user._id.toString() !== req.params.id) {
         query.isPublic = true;
       }
       const tours = await Tours.find(query)
         .sort('-createdAt')
         .skip(offset * 5)
         .limit(5)
-        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('userId likes', 'username fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'username fullname avatar'
+          }
+        })
         .populate('tour', 'date')
         .populate({
           path: 'comments',
@@ -498,16 +540,16 @@ class TourController {
         res.notFound('Không tìm thấy tour');
         return;
       }
+
       // console.log(req.params.id)
       let tour = await Tours.findById(req.params.id);
-      let requestId;
-      if (
-        !tour ||
-        (!tour.isPublic && (!req.user || req.user._id !== tour.userId))
-      ) {
-        res.status(404).json({ success: false, message: 'not found' });
-        return;
+      if (!tour) return res.notFound('Không tìm thấy tour');
+      const isInvite = tour.joinIds.map(item => item.id?.toString());
+      console.log(isInvite);
+      if (!tour.isPublic && !isInvite.includes(req.user._id.toString())) {
+        return res.notFound('Không tìm thấy tour');
       }
+      let requestId;
       if (tour.shareId) {
         requestId = tour.shareId;
       } else requestId = tour._id;
@@ -517,7 +559,7 @@ class TourController {
         .populate({
           path: 'tour',
           populate: {
-            path: 'locations',
+            path: 'events',
             populate: {
               path: 'location',
               select: 'name images fullname position',
@@ -531,42 +573,40 @@ class TourController {
         .populate({
           path: 'tour',
           populate: {
-            path: 'services',
+            path: 'events',
             populate: {
               path: 'service',
-              select: 'name images'
+              select: 'name images position',
+              populate: {
+                path: 'province',
+                select: 'name fullname'
+              }
             }
           }
         })
         .populate({
           path: 'tour',
           populate: {
-            path: 'locations',
+            path: 'comments',
             populate: {
-              path: 'services',
-              populate: {
-                path: 'service',
-                select: 'name images'
-              }
+              path: 'userId likes',
+              select: 'fullname avatar'
             }
           }
         })
-        .populate('userId likes joinIds', 'fullname avatar')
+        .populate('userId likes', 'fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'fullname avatar email'
+          }
+        })
         .populate({
           path: 'comments',
           populate: {
             path: 'userId likes',
             select: 'fullname avatar'
-          }
-        })
-        .populate({
-          path: 'tour',
-          populate: {
-            path: 'locations',
-            populate: {
-              path: 'joinIds',
-              select: 'fullname avatar'
-            }
           }
         });
 
@@ -585,34 +625,174 @@ class TourController {
     }
   }
 
-  async joinTour(req, res) {
+  async inviteJoinTour(req, res) {
     try {
       if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy tour');
         return;
       }
+
+      const users = req.body;
+
+      let usersTemp = users.map(item => ({
+        id: item.id._id,
+        isJoin: false,
+        isEdit: item.isEdit
+      }));
+
       var tour = await Tours.find({
         _id: req.params.id,
-        joinIds: req.user._id
+        userId: req.user._id
       });
-      if (tour.length > 0) {
-        return res
-          .status(400)
-          .json({ success: false, message: 'You joined this tour.' });
+
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
+        return;
       }
 
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
-          $addToSet: {
-            joinIds: req.user._id
+          $push: {
+            joinIds: { $each: usersTemp }
           }
         },
         { new: true }
-      ).populate('joinIds', 'avatar fullname username');
+      ).populate({
+        path: 'joinIds',
+        populate: {
+          path: 'id',
+          select: 'username fullname avatar'
+        }
+      });
+
       res.success({
         success: true,
         message: 'join tour success',
+        tour: tour
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async removeMember(req, res) {
+    try {
+      if (!ObjectId.isValid(req.params.id)) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+      let tour = await Tours.find({
+        _id: req.params.id,
+        userId: req.user._id
+      });
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+      const { id } = req.body;
+
+      tour = await Tours.findByIdAndUpdate(
+        req.params.id,
+        {
+          $pull: {
+            joinIds: { id: id }
+          }
+        },
+        { new: true }
+      ).populate({
+        path: 'joinIds',
+        populate: {
+          path: 'id',
+          select: 'username fullname avatar'
+        }
+      });
+
+      res.success({
+        success: true,
+        message: 'remove user success',
+        tour: tour
+      });
+      // unJoinItem(user, req.params.id);
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async changeIsEditJoin(req, res) {
+    try {
+      if (!ObjectId.isValid(req.params.id)) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+      let tour = await Tours.find({
+        _id: req.params.id,
+        userId: req.user._id
+      });
+      if (!tour) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+      const { id, isEdit } = req.body;
+      tour = await Tours.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          joinIds: { $elemMatch: { id: id } }
+        },
+        {
+          $set: {
+            'joinIds.$.isEdit': isEdit
+          }
+        },
+        { new: true }
+      ).populate({
+        path: 'joinIds',
+        populate: {
+          path: 'id',
+          select: 'username fullname avatar'
+        }
+      });
+
+      res.success({
+        success: true,
+        message: 'change user success'
+      });
+      // unJoinItem(user, req.params.id);
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async acceptInviteJoin(req, res) {
+    try {
+      if (!ObjectId.isValid(req.params.id)) {
+        res.notFound('Không tìm thấy tour');
+        return;
+      }
+      let tour = await Tours.findById(req.params.id);
+
+      tour = await Tours.findOneAndUpdate(
+        {
+          _id: req.params.id,
+          joinIds: { $elemMatch: { id: req.user._id } }
+        },
+        {
+          $set: {
+            'joinIds.$.isJoin': true
+          }
+        },
+        { new: true }
+      ).populate({
+        path: 'joinIds',
+        populate: {
+          path: 'id',
+          select: 'username fullname avatar'
+        }
+      });
+
+      res.success({
+        success: true,
+        message: 'accept user success',
         joinIds: tour.joinIds
       });
 
@@ -632,62 +812,36 @@ class TourController {
     }
   }
 
-  async unJoinTour(req, res) {
-    try {
-      if (!ObjectId.isValid(req.params.id)) {
-        res.notFound('Không tìm thấy tour');
-        return;
-      }
-      const tour = await Tours.findByIdAndUpdate(
-        req.params.id,
-        {
-          $pull: {
-            joinIds: req.user._id
-          }
-        },
-        { new: true }
-      ).populate('joinIds', 'avatar fullname username');
-
-      res.success({
-        success: true,
-        message: 'unjoin tour success',
-        joinIds: tour.joinIds
-      });
-
-      unJoinItem(req.user._id, req.params.id);
-    } catch (err) {
-      res.error(err);
-    }
-  }
-
-  async removeJoin(req, res) {
+  async unAcceptInviteJoin(req, res) {
     try {
       if (!ObjectId.isValid(req.params.id)) {
         res.notFound('Không tìm thấy tour');
         return;
       }
       let tour = await Tours.findById(req.params.id);
-      if (tour.userId.toString() !== req.user._id.toString()) {
-        res.status(401).json({ success: false, message: 'Không được quyền' });
-        return;
-      }
-      const { user } = req.body;
+
       tour = await Tours.findByIdAndUpdate(
         req.params.id,
         {
           $pull: {
-            joinIds: user
+            joinIds: { id: req.user._id }
           }
         },
         { new: true }
-      ).populate('joinIds', 'avatar fullname username');
+      ).populate({
+        path: 'joinIds',
+        populate: {
+          path: 'id',
+          select: 'username fullname avatar'
+        }
+      });
 
       res.success({
         success: true,
-        message: 'remove user success',
+        message: 'unAccept success',
         joinIds: tour.joinIds
       });
-      unJoinItem(user, req.params.id);
+      // unJoinItem(user, req.params.id);
     } catch (err) {
       res.error(err);
     }
@@ -722,94 +876,94 @@ class TourController {
     }
   }
 
-  async joinLocation(req, res) {
-    try {
-      const { id } = req.params;
-      if (!ObjectId.isValid(id)) {
-        res.notFound('Không tìm thấy tour');
-        return;
-      }
-      const { locationId } = req.body;
-      const tour = await TourDates.findOneAndUpdate(
-        { _id: id, locations: { $elemMatch: { _id: locationId } } },
-        {
-          $addToSet: {
-            'locations.$.joinIds': req.user._id
-          }
-        }
-      );
+  // async joinLocation(req, res) {
+  //   try {
+  //     const { id } = req.params;
+  //     if (!ObjectId.isValid(id)) {
+  //       res.notFound('Không tìm thấy tour');
+  //       return;
+  //     }
+  //     const { locationId } = req.body;
+  //     const tour = await TourDates.findOneAndUpdate(
+  //       { _id: id, locations: { $elemMatch: { _id: locationId } } },
+  //       {
+  //         $addToSet: {
+  //           'locations.$.joinIds': req.user._id
+  //         }
+  //       }
+  //     );
 
-      if (!tour) return res.notFound();
+  //     if (!tour) return res.notFound();
 
-      if (tour.isPublic) {
-        const tourRate = new ToursRate({
-          tour_id: id,
-          user_id: req.user._id,
-          type: 4
-        });
+  //     if (tour.isPublic) {
+  //       const tourRate = new ToursRate({
+  //         tour_id: id,
+  //         user_id: req.user._id,
+  //         type: 4
+  //       });
 
-        await tourRate.save();
-      }
+  //       await tourRate.save();
+  //     }
 
-      res.success({
-        success: true,
-        message: 'Tham gia thành công'
-      });
-    } catch (err) {
-      console.log(err);
-      res.error(err);
-    }
-  }
+  //     res.success({
+  //       success: true,
+  //       message: 'Tham gia thành công'
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //     res.error(err);
+  //   }
+  // }
 
-  async unjoinLocation(req, res) {
-    try {
-      const { id } = req.params;
-      if (!ObjectId.isValid(id)) {
-        res.notFound('Không tìm thấy tour');
-        return;
-      }
-      const { locationId } = req.body;
-      await TourDates.findOneAndUpdate(
-        { _id: id, locations: { $elemMatch: { _id: locationId } } },
-        {
-          $pull: {
-            'locations.$.joinIds': req.user._id
-          }
-        }
-      );
-      res.success({
-        success: true,
-        message: 'Bỏ tham gia thành công'
-      });
-    } catch (err) {
-      res.error(err);
-    }
-  }
+  // async unjoinLocation(req, res) {
+  //   try {
+  //     const { id } = req.params;
+  //     if (!ObjectId.isValid(id)) {
+  //       res.notFound('Không tìm thấy tour');
+  //       return;
+  //     }
+  //     const { locationId } = req.body;
+  //     await TourDates.findOneAndUpdate(
+  //       { _id: id, locations: { $elemMatch: { _id: locationId } } },
+  //       {
+  //         $pull: {
+  //           'locations.$.joinIds': req.user._id
+  //         }
+  //       }
+  //     );
+  //     res.success({
+  //       success: true,
+  //       message: 'Bỏ tham gia thành công'
+  //     });
+  //   } catch (err) {
+  //     res.error(err);
+  //   }
+  // }
 
-  async removeJoinLocation(req, res) {
-    try {
-      const { id } = req.params;
-      if (!ObjectId.isValid(id)) {
-        res.notFound('Không tìm thấy tour');
-        return;
-      }
-      const { locationId, userId } = req.body;
-      await TourDates.findOneAndUpdate(
-        { _id: id, locations: { $elemMatch: { _id: locationId } } },
-        {
-          $pull: {
-            'locations.$.joinIds': userId
-          }
-        }
-      );
-      res.success({
-        success: true,
-        message: 'Loại thành công'
-      });
-    } catch (err) {
-      res.error(err);
-    }
-  }
+  // async removeJoinLocation(req, res) {
+  //   try {
+  //     const { id } = req.params;
+  //     if (!ObjectId.isValid(id)) {
+  //       res.notFound('Không tìm thấy tour');
+  //       return;
+  //     }
+  //     const { locationId, userId } = req.body;
+  //     await TourDates.findOneAndUpdate(
+  //       { _id: id, locations: { $elemMatch: { _id: locationId } } },
+  //       {
+  //         $pull: {
+  //           'locations.$.joinIds': userId
+  //         }
+  //       }
+  //     );
+  //     res.success({
+  //       success: true,
+  //       message: 'Loại thành công'
+  //     });
+  //   } catch (err) {
+  //     res.error(err);
+  //   }
+  // }
 
   async search(req, res) {
     try {
@@ -893,7 +1047,7 @@ class TourController {
         {
           $lookup: {
             from: 'users',
-            localField: 'tour.joinIds',
+            localField: 'tour.joinIds.id',
             foreignField: '_id',
             as: 'tour.joinIds',
             pipeline: [
@@ -938,11 +1092,13 @@ class TourController {
           $limit: 10
         }
       ]);
-      // console.log("tours",tours)
-      tours = tours.map(tour => ({
-        ...tour.tour,
-        userId: tour.tour.userId[0]
-      }));
+
+      tours = tours
+        .filter(item => item.tour.isPublic)
+        .map(tour => ({
+          ...tour.tour,
+          userId: tour.tour.userId[0]
+        }));
 
       res.success({
         success: true,
@@ -984,7 +1140,10 @@ class TourController {
             path: 'shareId',
             populate: {
               path: 'joinIds',
-              select: 'username fullname avatar'
+              populate: {
+                path: 'id',
+                select: 'username fullname avatar'
+              }
             }
           });
         return res.success({
@@ -1016,7 +1175,14 @@ class TourController {
           isPublic: true
         })
           // .select('name image content cost provinces locations');
-          .populate('userId joinIds likes', 'username fullname avatar');
+          .populate('userId likes', 'username fullname avatar')
+          .populate({
+            path: 'joinIds',
+            populate: {
+              path: 'id',
+              select: 'username fullname avatar'
+            }
+          });
         // console.log("tours",tours)
         return res.success({
           success: true,
@@ -1072,7 +1238,14 @@ class TourController {
 
       let tours = await Tours.find(query, score)
         .sort(sort)
-        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('userId likes', 'username fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'username fullname avatar'
+          }
+        })
         .populate('tour', 'date')
         .populate({
           path: 'shareId',
@@ -1092,7 +1265,10 @@ class TourController {
           path: 'shareId',
           populate: {
             path: 'joinIds',
-            select: 'username fullname avatar'
+            populate: {
+              path: 'id',
+              select: 'username fullname avatar'
+            }
           }
         });
 
@@ -1151,7 +1327,14 @@ class TourController {
       const tours = await Tours.find({ hashtags: hashtag })
         .skip(page)
         .limit(limit)
-        .populate('userId joinIds likes', 'username fullname avatar')
+        .populate('userId likes', 'username fullname avatar')
+        .populate({
+          path: 'joinIds',
+          populate: {
+            path: 'id',
+            select: 'username fullname avatar'
+          }
+        })
         .populate('tour', 'date')
         .populate({
           path: 'shareId',
@@ -1171,7 +1354,10 @@ class TourController {
           path: 'shareId',
           populate: {
             path: 'joinIds',
-            select: 'username fullname avatar'
+            populate: {
+              path: 'id',
+              select: 'username fullname avatar'
+            }
           }
         });
 
