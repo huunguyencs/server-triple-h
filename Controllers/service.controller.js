@@ -563,6 +563,7 @@ class ServiceController {
   async getListReview(req, res) {
     try {
       const { list } = req.body;
+      if (!list?.length) return res.errorClient();
       const reviews = await ServiceRates.find({
         _id: {
           $in: list
