@@ -175,7 +175,7 @@ function updatePropsItem(id, type, categories, description) {
 }
 
 function deleteItem(id) {
-  return recombeeClient.send(rqs.DeleteItem(id));
+  return recombeeClient.send(new rqs.DeleteItem(id));
 }
 
 function createUser(id) {

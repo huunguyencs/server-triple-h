@@ -96,10 +96,8 @@ class TourController {
 
       let cat = [...provinces, ...locations];
       if (hashtags) cat = [...cat, ...hashtags];
-
-      if (isPublic) {
-        createItem(newTour._doc._id, 'tour', cat, content);
-      }
+      
+      createItem(newTour._doc._id, 'tour', cat, content);
     } catch (err) {
       console.log(err);
       res.error(err);
