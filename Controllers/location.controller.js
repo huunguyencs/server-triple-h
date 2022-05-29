@@ -2,12 +2,13 @@ const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
 const Posts = require('../Models/post.model');
 const Provinces = require('../Models/province.model');
+const { makeID } = require('../utils/crypto');
 const {
   createItem,
   viewDetailItem,
   getLocationRecommend,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -99,8 +100,9 @@ class LocationController {
         await Posts.deleteMany({ _id: { $in: location.posts } });
 
       res.deleted();
-
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);
@@ -232,23 +234,31 @@ class LocationController {
 
   async getAll(req, res) {
     try {
-      const { admin } = req.query;
-      var locations = [];
-      if (admin === 'true') {
-        locations = await Locations.find({})
-          .select('fullname name province star')
-          .populate('province', 'fullname');
-      } else {
-        locations = await Locations.find({})
-          .select('fullname name province position images')
-          .populate('province', 'fullname name');
-      }
+      let { limit, page, name, province, isContribute } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+
+      const where = {};
+      if (name) where.name = name;
+      if (province) where.province = province;
+      if (isContribute && isContribute === 'true') where.isContribute = true;
+      else where.isContribute = { $ne: true };
+      const count = await Locations.count(where);
+      // console.log(count);
+
+      const locations = await Locations.find(where)
+        .skip(limit * page)
+        .limit(limit)
+        .select('fullname name province position images star isContribute')
+        .populate('province', 'fullname name');
       res.success({
         success: true,
         message: 'Lấy tất cả địa điểm thành công',
-        locations
+        locations,
+        total: count
       });
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
@@ -298,6 +308,102 @@ class LocationController {
         });
       }
       res.notFound('Không tìm thấy địa điểm gợi ý');
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async createContribute(req, res) {
+    try {
+      const { fullname, province_name, information } = req.body;
+      const location = new Locations({
+        ...req.body,
+        name: makeID(10),
+        user: req.user._id,
+        isContribute: true
+      });
+      await location.save();
+
+      res.success({
+        success: true,
+        location: { ...location._doc }
+      });
+
+      createItem(
+        location._doc._id,
+        'location',
+        [fullname, province_name],
+        information
+      );
+    } catch (err) {
+      console.log(err);
+      res.error(err);
+    }
+  }
+
+  async updateContribute(req, res) {
+    try {
+      const { _id } = req.body;
+      if (!_id) return res.notFound('Không tìm thấy địa điểm');
+      const location = await Locations.findOneAndUpdate(
+        {
+          _id,
+          user: req.user._id,
+          isContribute: true
+        },
+        req.body,
+        { new: true }
+      );
+
+      if (!location) res.notFound('Không tìm thấy địa điểm');
+      res.success({
+        success: true,
+        location
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async deleteContribute(req, res) {
+    try {
+      const { id } = req.params;
+      await Locations.findByIdAndDelete(id);
+      res.deleted();
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      const { isContribute } = req.query;
+      const where = { province: id };
+      if (!isContribute) where.isContribute = { $ne: true };
+      const locations = await Locations.find(where)
+        .select('fullname name province position images star')
+        .populate('province', 'fullname name');
+      res.success({
+        success: true,
+        message: 'Lấy địa điểm thành công',
+        locations
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async myShare(req, res) {
+    try {
+      const locations = await Locations.find({
+        user: req.user?._id,
+        isContribute: true
+      }).populate('province', 'fullname name');
+      res.success({
+        success: true,
+        locations
+      });
     } catch (err) {
       res.error(err);
     }

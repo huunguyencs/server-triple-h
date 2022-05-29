@@ -224,6 +224,44 @@ class EventController {
       res.error(err);
     }
   }
+
+  async getList(req, res) {
+    try {
+      let { limit, page, name, province } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
+      where = {};
+      if (name) where.fullname = name;
+      if (province) where.provinceId = province;
+
+      const events = await Events.find(where)
+        .select('name fullname time provinceId calendarType')
+        .populate('provinceId', 'fullname');
+
+      res.success({
+        success: true,
+        events
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
+
+  async getByProvince(req, res) {
+    try {
+      const { id } = req.params;
+      const events = await Events.find({ provinceId: id, isContribute: false })
+        .select('name fullname time provinceId calendarType images')
+        .populate('provinceId', 'fullname');
+
+      res.success({
+        success: true,
+        events
+      });
+    } catch (err) {
+      res.error(err);
+    }
+  }
 }
 
 module.exports = new EventController();

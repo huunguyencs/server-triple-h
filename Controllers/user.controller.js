@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ObjectId = require('mongoose').Types.ObjectId;
 const Confirms = require('../Models/confirm.model');
-const LocationUser = require('../Models/locationUser.model');
+const Posts = require('../Models/post.model');
 const sendEmail = require('../utils/sendEmail');
 const {
   createUser,
@@ -311,6 +311,8 @@ class UserController {
         newUser
       });
 
+      const hobbies = newUser._doc.hobbies;
+
       if (hobbies?.length > 0) {
         setPrefUser(req.user._id, hobbies.split(','));
       }
@@ -467,18 +469,23 @@ class UserController {
       const user = await Users.findByIdAndUpdate(
         req.user._id,
         {
-          $pop: { tourSaved: tour }
+          $pull: { tourSaved: tour }
         },
         { new: true }
-      );
+      ).select('tourSaved');
+
+      console.log(user);
 
       res.success({
         success: true,
-        message: 'Loại khỏi danh sách thành công',
-        tourSaved: user.tourSaved
+        message: 'Loại khỏi danh sách thành công'
+        // tourSaved: user.tourSaved
       });
-      unSaveItem(req.user._id, tour);
+      try {
+        unSaveItem(req.user._id, tour);
+      } catch (err) {}
     } catch (err) {
+      console.log(err);
       res.error(err);
     }
   }
@@ -593,7 +600,12 @@ class UserController {
 
   async getAll(req, res) {
     try {
+      let { limit, page } = req.query;
+      limit = parseInt(limit) || 10;
+      page = parseInt(page) || 0;
       const users = await Users.find({})
+        .skip(limit * page)
+        .limit(limit)
         .select(
           'username fullname email role avatar confirmAccount createdAt state'
         )
@@ -779,18 +791,10 @@ class UserController {
 
   async getReviews(req, res) {
     try {
-      const reviews = await LocationUser.find({ user: req.user._id })
-        .populate(
-          'review',
-          'locationId content images isPostReview rate hashtags'
-        )
-        .populate({
-          path: 'review',
-          populate: {
-            path: 'locationId',
-            select: 'name fullname images position province'
-          }
-        });
+      const reviews = await Posts.find({
+        user: req.user._id,
+        isPostReview: true
+      }).populate('locationId', 'name fullname images position province');
 
       res.success({
         success: true,

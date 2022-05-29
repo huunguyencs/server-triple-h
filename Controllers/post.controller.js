@@ -3,7 +3,7 @@ const Comments = require('../Models/comment.model');
 const TourDates = require('../Models/tourDate.model');
 const Locations = require('../Models/location.model');
 const LocationsRate = require('../Models/locationsRate.model');
-const LocationUser = require('../Models/locationUser.model');
+// const LocationUser = require('../Models/locationUser.model');
 const {
   createItem,
   shareItem,
@@ -12,8 +12,8 @@ const {
   unLikeItem,
   viewDetailItem,
   getPostRecommend,
-  updatePropsItem
-  // deleteItem
+  updatePropsItem,
+  deleteItem
 } = require('../utils/recombee');
 const { shuffle } = require('../utils/utils');
 
@@ -62,7 +62,8 @@ class PostController {
         userId: req.user._id,
         content,
         hashtags,
-        shareId
+        shareId,
+        isShare: true
       });
 
       await newPost.save();
@@ -95,7 +96,7 @@ class PostController {
 
   async createReview(req, res) {
     try {
-      const { locationId, rate, tourDateId, indexLocation, hashtags, content } =
+      const { locationId, rate, tourDateId, eventId, hashtags, content } =
         req.body;
       if (!locationId) {
         return res.errorClient('Thiếu thông tin địa điểm');
@@ -122,21 +123,21 @@ class PostController {
         }
       });
 
-      const newLocationUser = new LocationUser({
-        user: req.user._id,
-        review: newPost._doc._id
-      });
-      await newLocationUser.save();
+      // const newLocationUser = new LocationUser({
+      //   user: req.user._id,
+      //   review: newPost._doc._id
+      // });
+      // await newLocationUser.save();
 
       if (tourDateId) {
         await TourDates.findOneAndUpdate(
           {
             _id: tourDateId,
-            locations: { $elemMatch: { _id: indexLocation } }
+            events: { $elemMatch: { _id: eventId } }
           },
           {
             $push: {
-              'locations.$.postId': newPost._doc._id
+              'events.$.reviewIds': newPost._doc._id
             }
           },
           { new: true, safe: true, upsert: true }
@@ -658,8 +659,9 @@ class PostController {
       }
 
       res.deleted();
-
-      // deleteItem(req.params.id);
+      try {
+        deleteItem(req.params.id);
+      } catch (err) {}
     } catch (err) {
       console.log(err);
       res.error(err);

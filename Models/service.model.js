@@ -2,6 +2,10 @@ const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema(
   {
+    isContribute: {
+      type: Boolean,
+      default: false
+    },
     name: {
       type: String
     },
@@ -29,27 +33,15 @@ const serviceSchema = new mongoose.Schema(
     contact: String,
     type: {
       type: String,
-      required: true
+      default: 'contribute'
     }, // di chuyen, nha hang, khach san,
     province: { type: mongoose.Types.ObjectId, ref: 'provinces' },
     star: {
       type: [Number],
       default: [0, 0, 0, 0, 0]
     },
-    rate: [
-      {
-        userId: { type: mongoose.Types.ObjectId, ref: 'users' },
-        rate: Number,
-        content: String,
-        images: [String]
-      }
-    ],
     cost: String,
     andress: String,
-    // position: {
-    //   lat: Number,
-    //   lng: Number
-    // },
     position: [Number], // lng, lat
     images: [{ type: String }],
     discount: [{ type: String }]
