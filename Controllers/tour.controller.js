@@ -1043,7 +1043,7 @@ class TourController {
         {
           $lookup: {
             from: 'users',
-            localField: 'tour.joinIds',
+            localField: 'tour.joinIds.id',
             foreignField: '_id',
             as: 'tour.joinIds',
             pipeline: [
@@ -1088,14 +1088,14 @@ class TourController {
           $limit: 10
         }
       ]);
-      // console.log("tours",tours)
+      
       tours = tours
-        .filter(item => item.isPublic)
+        .filter(item => item.tour.isPublic )
         .map(tour => ({
           ...tour.tour,
           userId: tour.tour.userId[0]
         }));
-
+     
       res.success({
         success: true,
         tours
