@@ -443,13 +443,23 @@ class ServiceController {
             foreignField: '_id',
             as: 'cooperator'
           }
+        },
+        {
+          $lookup: {
+            from: 'provinces',
+            localField: 'province',
+            foreignField: '_id',
+            as: 'province',
+            pipeline: [{ $project: { _id: 1, name: 1, fullname: 1 } }]
+          }
         }
       ]);
 
       if (!services) return res.notFound('Không tìm thấy service');
       services = services.map(item => ({
         ...item,
-        cooperator: item.cooperator[0]
+        cooperator: item.cooperator[0],
+        province: item.province[0]
       }));
       res.success({
         success: true,
