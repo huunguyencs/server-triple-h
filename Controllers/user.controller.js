@@ -792,7 +792,7 @@ class UserController {
   async getReviews(req, res) {
     try {
       const reviews = await Posts.find({
-        user: req.user._id,
+        userId: req.user._id,
         isPostReview: true
       }).populate('locationId', 'name fullname images position province');
 

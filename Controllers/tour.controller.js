@@ -1325,7 +1325,7 @@ class TourController {
       limit = parseInt(limit) || 5;
       page = parseInt(page) || 0;
       const tours = await Tours.find({ hashtags: hashtag })
-        .skip(page)
+        .skip(page * limit)
         .limit(limit)
         .populate('userId likes', 'username fullname avatar')
         .populate({
